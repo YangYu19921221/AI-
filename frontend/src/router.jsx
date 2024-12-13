@@ -5,19 +5,60 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import StudentDashboard from './pages/student/Dashboard';
-import StudentCourses from './pages/student/Courses';
+import CourseList from './pages/student/courses/CourseList';
+import CourseDetail from './pages/student/courses/CourseDetail';
 import StudentAssignments from './pages/student/Assignments';
 import AssignmentDetail from './pages/student/AssignmentDetail';
 import Chat from './pages/ai/Chat';
 
 const router = createBrowserRouter([
+  // 公共路由（不需要Layout）
+  {
+    path: '/login',
+    element: <Login />
+  },
+  {
+    path: '/register',
+    element: <Register />
+  },
+  {
+    path: '/forgot-password',
+    element: <ForgotPassword />
+  },
+  // 需要Layout的路由
   {
     path: '/',
     element: <Layout />,
     children: [
       {
         path: '/',
-        element: <Navigate to="/login" />
+        element: <Navigate to="/student/dashboard" />
+      },
+      // 学生路由
+      {
+        path: '/student',
+        children: [
+          {
+            path: 'dashboard',
+            element: <StudentDashboard />
+          },
+          {
+            path: 'courses',
+            element: <CourseList />
+          },
+          {
+            path: 'courses/:id',
+            element: <CourseDetail />
+          },
+          {
+            path: 'assignments',
+            element: <StudentAssignments />
+          },
+          {
+            path: 'assignments/:id',
+            element: <AssignmentDetail />
+          }
+        ]
       },
       // 教师路由
       {
@@ -34,77 +75,14 @@ const router = createBrowserRouter([
           {
             path: 'courses',
             element: <div>课程管理</div>
-          },
-          {
-            path: 'exercises',
-            element: <div>题库管理</div>
-          },
-          {
-            path: 'assignments',
-            element: <div>作业管理</div>
-          },
-          {
-            path: 'assignments/create',
-            element: <div>创建作业</div>
-          },
-          {
-            path: 'assignments/:id',
-            element: <div>作业详情</div>
-          },
-          {
-            path: 'assignments/:id/grade',
-            element: <div>批改作业</div>
           }
         ]
       },
-      // 学生路由
       {
-        path: '/student',
-        children: [
-          {
-            path: 'dashboard',
-            element: <StudentDashboard />
-          },
-          {
-            path: 'courses',
-            element: <StudentCourses />
-          },
-          {
-            path: 'schedule',
-            element: <div>学习计划</div>
-          },
-          {
-            path: 'ai-chat',
-            element: <Chat />
-          },
-          {
-            path: 'assignments',
-            element: <StudentAssignments />
-          },
-          {
-            path: 'assignments/:id',
-            element: <AssignmentDetail />
-          }
-        ]
-      },
-      // 通用路由
-      {
-        path: '/profile',
-        element: <div>个人中心</div>
+        path: '/ai/chat',
+        element: <Chat />
       }
     ]
-  },
-  {
-    path: '/login',
-    element: <Login />
-  },
-  {
-    path: '/register',
-    element: <Register />
-  },
-  {
-    path: '/forgot-password',
-    element: <ForgotPassword />
   }
 ]);
 

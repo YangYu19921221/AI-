@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Layout as AntLayout, Menu, theme } from 'antd';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import {
   UserOutlined,
   BookOutlined,
@@ -8,10 +8,7 @@ import {
   LogoutOutlined,
   DashboardOutlined,
   TeamOutlined,
-  QuestionCircleOutlined,
-  ScheduleOutlined,
   FileTextOutlined,
-  EditOutlined,
 } from '@ant-design/icons';
 
 const { Header, Content, Sider } = AntLayout;
@@ -21,6 +18,14 @@ const Layout = () => {
   const location = useLocation();
   const [userRole, setUserRole] = useState(null);
   const { token } = theme.useToken();
+
+  // 检查用户是否已登录
+  const isAuthenticated = localStorage.getItem('token');
+  if (!isAuthenticated) {
+    // 保存当前路径，登录后可以重定向回来
+    localStorage.setItem('redirectPath', location.pathname);
+    return <Navigate to="/login" />;
+  }
 
   useEffect(() => {
     // 从localStorage获取用户信息
@@ -48,135 +53,85 @@ const Layout = () => {
       },
     ];
 
-    const teacherItems = [
-      {
-        key: '/teacher/dashboard',
-        icon: <DashboardOutlined />,
-        label: '教师主页',
-        onClick: () => navigate('/teacher/dashboard'),
-      },
-      {
-        key: '/teacher/students',
-        icon: <TeamOutlined />,
-        label: '学生管理',
-        onClick: () => navigate('/teacher/students'),
-      },
-      {
-        key: '/teacher/courses',
-        icon: <BookOutlined />,
-        label: '课程管理',
-        onClick: () => navigate('/teacher/courses'),
-      },
-      {
-        key: '/teacher/exercises',
-        icon: <QuestionCircleOutlined />,
-        label: '题库管理',
-        onClick: () => navigate('/teacher/exercises'),
-      },
-      {
-        key: '/teacher/assignments',
-        icon: <FileTextOutlined />,
-        label: '作业管理',
-        onClick: () => navigate('/teacher/assignments'),
-      },
-    ];
-
     const studentItems = [
       {
-        key: '/student/dashboard',
+        key: 'student-dashboard',
         icon: <DashboardOutlined />,
-        label: '学习主页',
+        label: '仪表盘',
         onClick: () => navigate('/student/dashboard'),
       },
       {
-        key: '/student/courses',
+        key: 'student-courses',
         icon: <BookOutlined />,
         label: '我的课程',
         onClick: () => navigate('/student/courses'),
       },
       {
-        key: '/student/schedule',
-        icon: <ScheduleOutlined />,
-        label: '学习计划',
-        onClick: () => navigate('/student/schedule'),
-      },
-      {
-        key: '/student/ai-chat',
-        icon: <MessageOutlined />,
-        label: 'AI辅导',
-        onClick: () => navigate('/student/ai-chat'),
-      },
-      {
-        key: '/student/assignments',
-        icon: <EditOutlined />,
+        key: 'student-assignments',
+        icon: <FileTextOutlined />,
         label: '我的作业',
         onClick: () => navigate('/student/assignments'),
       },
+      {
+        key: 'student-ai-chat',
+        icon: <MessageOutlined />,
+        label: 'AI助手',
+        onClick: () => navigate('/ai/chat'),
+      },
     ];
 
-    return [
-      ...(userRole === 'teacher' ? teacherItems : []),
-      ...(userRole === 'student' ? studentItems : []),
-      ...commonItems,
+    const teacherItems = [
+      {
+        key: 'teacher-dashboard',
+        icon: <DashboardOutlined />,
+        label: '仪表盘',
+        onClick: () => navigate('/teacher/dashboard'),
+      },
+      {
+        key: 'teacher-students',
+        icon: <TeamOutlined />,
+        label: '学生管理',
+        onClick: () => navigate('/teacher/students'),
+      },
+      {
+        key: 'teacher-courses',
+        icon: <BookOutlined />,
+        label: '课程管理',
+        onClick: () => navigate('/teacher/courses'),
+      },
     ];
-  };
 
-  // 获取当前选中的菜单项
-  const getSelectedKey = () => {
-    const pathSegments = location.pathname.split('/');
-    const baseRoute = '/' + pathSegments.slice(1, 3).join('/');
-    return [baseRoute];
+    return userRole === 'teacher' ? [...teacherItems, ...commonItems] : [...studentItems, ...commonItems];
   };
 
   return (
     <AntLayout style={{ minHeight: '100vh' }}>
-      <Header 
-        style={{ 
-          padding: '0 24px', 
-          background: token.colorBgContainer,
-          borderBottom: `1px solid ${token.colorBorderSecondary}`,
-          display: 'flex',
-          alignItems: 'center',
+      <Sider
+        theme="light"
+        style={{
+          overflow: 'auto',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
+          borderRight: `1px solid ${token.colorBorder}`,
         }}
       >
-        <h1 style={{ 
-          margin: 0, 
-          fontSize: '18px',
-          color: token.colorText,
-        }}>
-          AI辅导系统 - {userRole === 'teacher' ? '教师端' : '学生端'}
-        </h1>
-      </Header>
-      <AntLayout>
-        <Sider
-          width={200}
-          style={{
-            background: token.colorBgContainer,
-          }}
-        >
-          <Menu
-            mode="inline"
-            selectedKeys={getSelectedKey()}
-            style={{
-              height: '100%',
-              borderRight: 0,
-            }}
-            items={getMenuItems()}
-          />
-        </Sider>
-        <AntLayout style={{ padding: '24px' }}>
-          <Content
-            style={{
-              padding: 24,
-              margin: 0,
-              background: token.colorBgContainer,
-              borderRadius: token.borderRadius,
-              minHeight: 280,
-            }}
-          >
-            <Outlet />
-          </Content>
-        </AntLayout>
+        <div style={{ height: '64px', padding: '16px', textAlign: 'center' }}>
+          <h2 style={{ margin: 0 }}>AI辅导系统</h2>
+        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={getMenuItems()}
+          style={{ borderRight: 'none' }}
+        />
+      </Sider>
+      <AntLayout style={{ marginLeft: 200 }}>
+        <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+          <Outlet />
+        </Content>
       </AntLayout>
     </AntLayout>
   );

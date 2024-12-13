@@ -7,6 +7,7 @@ const userRoutes = require('./routes/userRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
+const studentCourseRoutes = require('./routes/studentCourseRoutes');
 const path = require('path');
 
 // 设置环境变量
@@ -49,11 +50,12 @@ app.get('/', (req, res) => {
     res.json({ message: 'API is working' });
 });
 
-// 路由
+// API路由
 app.use('/api/users', userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api', assignmentRoutes);
+app.use('/api/student', studentCourseRoutes);
 
 // 错误处理
 app.use((err, req, res, next) => {
