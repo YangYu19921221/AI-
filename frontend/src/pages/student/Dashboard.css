@@ -1,0 +1,156 @@
+.dashboard-layout {
+    min-height: 100vh;
+}
+
+.dashboard-content {
+    height: 100%;
+}
+
+.welcome-section {
+    background: linear-gradient(135deg, #1890ff 0%, #096dd9 100%);
+    padding: 24px;
+    border-radius: 8px;
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 24px;
+}
+
+.welcome-section h4 {
+    color: white !important;
+    margin: 0;
+}
+
+.welcome-section .ant-typography-secondary {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.stat-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.stat-icon {
+    font-size: 20px;
+    margin-right: 8px;
+}
+
+.progress-card .stat-icon {
+    color: #1890ff;
+}
+
+.time-card .stat-icon {
+    color: #52c41a;
+}
+
+.task-card .stat-icon {
+    color: #faad14;
+}
+
+.achievement-card .stat-icon {
+    color: #eb2f96;
+}
+
+.list-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+
+.course-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px !important;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+}
+
+.course-item:hover {
+    background: #f0f0f0;
+}
+
+.course-info {
+    flex: 1;
+}
+
+.course-info h5 {
+    margin-bottom: 4px !important;
+}
+
+.task-item {
+    padding: 16px !important;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+}
+
+.task-item:hover {
+    background: #f0f0f0;
+}
+
+.achievements-card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    height: 100%;
+}
+
+.achievement-item {
+    border-radius: 8px;
+    background: #fafafa;
+    transition: all 0.3s ease;
+    margin-bottom: 8px;
+}
+
+.achievement-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.achievement-icon {
+    font-size: 24px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    border-radius: 8px;
+    margin-right: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* 响应式布局调整 */
+@media screen and (max-width: 768px) {
+    .welcome-section {
+        padding: 16px;
+    }
+
+    .welcome-section .ant-space {
+        margin-top: 16px;
+    }
+
+    .stat-card,
+    .list-card,
+    .achievements-card {
+        margin-bottom: 16px;
+    }
+}

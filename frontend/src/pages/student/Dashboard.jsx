@@ -1,135 +1,216 @@
-import React, { useEffect, useState } from 'react';
-import { Card, Row, Col, Statistic, List, Calendar, Badge, Button } from 'antd';
-import { BookOutlined, CheckCircleOutlined, ClockCircleOutlined, RightOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
+import {
+    Layout,
+    Card,
+    Row,
+    Col,
+    Typography,
+    Progress,
+    Avatar,
+    Space,
+    Button,
+    List,
+    Tag,
+    theme
+} from 'antd';
+import {
+    BookOutlined,
+    ClockCircleOutlined,
+    CalendarOutlined,
+    TrophyOutlined,
+    RightOutlined,
+    UserOutlined
+} from '@ant-design/icons';
+import './Dashboard.css';
+
+const { Content } = Layout;
+const { Title, Text } = Typography;
 
 const StudentDashboard = () => {
-  const navigate = useNavigate();
-  const [learningStats, setLearningStats] = useState({
-    totalCourses: 0,
-    completedCourses: 0,
-    totalLearningTime: 0,
-  });
+    const { token } = theme.useToken();
 
-  const [recentCourses, setRecentCourses] = useState([]);
-  const [schedule, setSchedule] = useState([]);
-
-  useEffect(() => {
-    // TODO: 从后端获取数据
     // 模拟数据
-    setLearningStats({
-      totalCourses: 5,
-      completedCourses: 2,
-      totalLearningTime: 24,
-    });
+    const recentCourses = [
+        { id: 1, name: '高等数学', progress: 60, lastStudied: '2023-12-12', teacher: '张老师' },
+        { id: 2, name: '线性代数', progress: 30, lastStudied: '2023-12-11', teacher: '李老师' },
+        { id: 3, name: '概率论', progress: 45, lastStudied: '2023-12-10', teacher: '王老师' },
+    ];
 
-    setRecentCourses([
-      { id: 1, name: '高等数学', progress: 60, lastStudied: '2023-12-12' },
-      { id: 2, name: '线性代数', progress: 30, lastStudied: '2023-12-11' },
-      { id: 3, name: '概率论', progress: 45, lastStudied: '2023-12-10' },
-    ]);
+    const upcomingTasks = [
+        { id: 1, title: '高等数学作业', dueDate: '2023-12-15', type: 'assignment' },
+        { id: 2, title: '线性代数测验', dueDate: '2023-12-16', type: 'quiz' },
+        { id: 3, title: '概率论课程', dueDate: '2023-12-17', type: 'class' },
+    ];
 
-    setSchedule([
-      { date: '2023-12-13', events: ['高等数学作业', '线性代数测验'] },
-      { date: '2023-12-14', events: ['概率论课程'] },
-      { date: '2023-12-15', events: ['高等数学课程'] },
-    ]);
-  }, []);
+    const achievements = [
+        { id: 1, title: '学习达人', description: '连续学习7天', icon: '🏆' },
+        { id: 2, title: '知识探索者', description: '完成5门课程', icon: '🎯' },
+        { id: 3, title: '优秀学员', description: '获得3个A+', icon: '⭐' },
+    ];
 
-  const getListData = (value) => {
-    const dateStr = value.format('YYYY-MM-DD');
-    const dayEvents = schedule.find(item => item.date === dateStr);
-    return dayEvents ? dayEvents.events.map(event => ({ type: 'success', content: event })) : [];
-  };
-
-  const dateCellRender = (value) => {
-    const listData = getListData(value);
     return (
-      <ul className="events" style={{ listStyle: 'none', padding: 0 }}>
-        {listData.map((item, index) => (
-          <li key={index}>
-            <Badge status={item.type} text={item.content} />
-          </li>
-        ))}
-      </ul>
+        <Layout className="dashboard-layout">
+            <Content className="dashboard-content">
+                {/* 顶部欢迎区域 */}
+                <div className="welcome-section">
+                    <Row gutter={[24, 24]} align="middle">
+                        <Col flex="none">
+                            <Avatar size={64} icon={<UserOutlined />} />
+                        </Col>
+                        <Col flex="auto">
+                            <Title level={4} style={{ margin: 0 }}>欢迎回来，张同学</Title>
+                            <Text type="secondary">今天是学习的好日子！</Text>
+                        </Col>
+                        <Col flex="none">
+                            <Space>
+                                <Button type="primary" icon={<BookOutlined />}>
+                                    继续学习
+                                </Button>
+                                <Button icon={<CalendarOutlined />}>
+                                    查看日程
+                                </Button>
+                            </Space>
+                        </Col>
+                    </Row>
+                </div>
+
+                {/* 学习进度区域 */}
+                <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+                    <Col xs={24} sm={12} md={6}>
+                        <Card className="stat-card progress-card">
+                            <div className="stat-header">
+                                <BookOutlined className="stat-icon" />
+                                <Text>课程进度</Text>
+                            </div>
+                            <Title level={3}>5/12</Title>
+                            <Progress percent={42} strokeColor={token.colorPrimary} />
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} md={6}>
+                        <Card className="stat-card time-card">
+                            <div className="stat-header">
+                                <ClockCircleOutlined className="stat-icon" />
+                                <Text>学习时长</Text>
+                            </div>
+                            <Title level={3}>24h</Title>
+                            <Progress percent={75} strokeColor="#52c41a" />
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} md={6}>
+                        <Card className="stat-card task-card">
+                            <div className="stat-header">
+                                <CalendarOutlined className="stat-icon" />
+                                <Text>待完成任务</Text>
+                            </div>
+                            <Title level={3}>3</Title>
+                            <Progress percent={60} strokeColor="#faad14" />
+                        </Card>
+                    </Col>
+                    <Col xs={24} sm={12} md={6}>
+                        <Card className="stat-card achievement-card">
+                            <div className="stat-header">
+                                <TrophyOutlined className="stat-icon" />
+                                <Text>获得成就</Text>
+                            </div>
+                            <Title level={3}>12</Title>
+                            <Progress percent={90} strokeColor="#eb2f96" />
+                        </Card>
+                    </Col>
+                </Row>
+
+                {/* 最近课程和待办任务 */}
+                <Row gutter={[24, 24]} style={{ marginTop: 24 }}>
+                    <Col xs={24} md={16}>
+                        <Card 
+                            title="最近学习" 
+                            extra={<Button type="link" icon={<RightOutlined />}>查看全部</Button>}
+                            className="list-card"
+                        >
+                            <List
+                                dataSource={recentCourses}
+                                renderItem={item => (
+                                    <List.Item className="course-item">
+                                        <div className="course-info">
+                                            <Title level={5}>{item.name}</Title>
+                                            <Space>
+                                                <Text type="secondary">
+                                                    <UserOutlined /> {item.teacher}
+                                                </Text>
+                                                <Text type="secondary">
+                                                    <ClockCircleOutlined /> {item.lastStudied}
+                                                </Text>
+                                            </Space>
+                                        </div>
+                                        <Progress 
+                                            percent={item.progress} 
+                                            size="small" 
+                                            style={{ width: 120 }}
+                                        />
+                                    </List.Item>
+                                )}
+                            />
+                        </Card>
+                    </Col>
+                    <Col xs={24} md={8}>
+                        <Card 
+                            title="待办任务" 
+                            extra={<Button type="link" icon={<RightOutlined />}>更多</Button>}
+                            className="list-card"
+                        >
+                            <List
+                                dataSource={upcomingTasks}
+                                renderItem={item => (
+                                    <List.Item className="task-item">
+                                        <Space direction="vertical" style={{ width: '100%' }}>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                                                <Text strong>{item.title}</Text>
+                                                <Tag color={
+                                                    item.type === 'assignment' ? 'blue' : 
+                                                    item.type === 'quiz' ? 'red' : 
+                                                    'green'
+                                                }>
+                                                    {item.type}
+                                                </Tag>
+                                            </div>
+                                            <Text type="secondary">
+                                                <CalendarOutlined /> 截止日期：{item.dueDate}
+                                            </Text>
+                                        </Space>
+                                    </List.Item>
+                                )}
+                            />
+                        </Card>
+                    </Col>
+                </Row>
+
+                {/* 成就展示 */}
+                <Card 
+                    title="我的成就" 
+                    className="achievements-card"
+                    style={{ marginTop: 24 }}
+                >
+                    <Row gutter={[24, 24]}>
+                        {achievements.map(achievement => (
+                            <Col xs={24} sm={12} md={8} key={achievement.id}>
+                                <Card className="achievement-item">
+                                    <Space align="start">
+                                        <div className="achievement-icon">
+                                            {achievement.icon}
+                                        </div>
+                                        <div>
+                                            <Text strong>{achievement.title}</Text>
+                                            <br />
+                                            <Text type="secondary">{achievement.description}</Text>
+                                        </div>
+                                    </Space>
+                                </Card>
+                            </Col>
+                        ))}
+                    </Row>
+                </Card>
+            </Content>
+        </Layout>
     );
-  };
-
-  return (
-    <div>
-      <h2>学习概览</h2>
-      <Row gutter={16} style={{ marginBottom: 24 }}>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="总课程数"
-              value={learningStats.totalCourses}
-              prefix={<BookOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="已完成课程"
-              value={learningStats.completedCourses}
-              prefix={<CheckCircleOutlined />}
-            />
-          </Card>
-        </Col>
-        <Col span={8}>
-          <Card>
-            <Statistic
-              title="总学习时长(小时)"
-              value={learningStats.totalLearningTime}
-              prefix={<ClockCircleOutlined />}
-            />
-          </Card>
-        </Col>
-      </Row>
-
-      <Row gutter={16}>
-        <Col span={12}>
-          <Card 
-            title="最近学习" 
-            extra={
-              <Button 
-                type="link" 
-                onClick={() => navigate('/student/courses')}
-                icon={<RightOutlined />}
-              >
-                查看全部课程
-              </Button>
-            }
-            style={{ marginBottom: 24 }}
-          >
-            <List
-              dataSource={recentCourses}
-              renderItem={item => (
-                <List.Item>
-                  <List.Item.Meta
-                    title={
-                      <a onClick={() => navigate('/student/courses')}>{item.name}</a>
-                    }
-                    description={`上次学习: ${item.lastStudied}`}
-                  />
-                  <div>进度: {item.progress}%</div>
-                </List.Item>
-              )}
-            />
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card title="学习日程">
-            <Calendar
-              fullscreen={false}
-              dateCellRender={dateCellRender}
-            />
-          </Card>
-        </Col>
-      </Row>
-    </div>
-  );
 };
 
 export default StudentDashboard;

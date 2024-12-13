@@ -1,0 +1,31 @@
+.ant-layout-sider {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  z-index: 1000;
+}
+
+.ant-menu-inline {
+  border-right: none !important;
+}
+
+.ant-layout-content {
+  transition: all 0.2s;
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+  .ant-layout-sider {
+    position: absolute !important;
+    z-index: 1000;
+    height: 100vh;
+    left: -220px;
+    transition: all 0.2s;
+  }
+
+  .ant-layout-sider-collapsed {
+    left: 0;
+  }
+
+  .ant-layout-has-sider {
+    margin-left: 0 !important;
+  }
+}

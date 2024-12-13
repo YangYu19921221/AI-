@@ -1,9 +1,61 @@
 const { Course, Lesson, User, Enrollment } = require('../models');
 const { Op } = require('sequelize');
 
+// 创建测试数据
+const createTestData = async () => {
+    try {
+        const coursesCount = await Course.count();
+        if (coursesCount === 0) {
+            const testCourses = [
+                {
+                    title: 'JavaScript基础教程',
+                    description: '从零开始学习JavaScript编程语言',
+                    level: 'beginner',
+                    category: 'programming',
+                    coverImage: 'https://via.placeholder.com/300x160?text=JavaScript',
+                    teacherId: 1
+                },
+                {
+                    title: 'React入门到精通',
+                    description: '学习React框架开发现代Web应用',
+                    level: 'intermediate',
+                    category: 'programming',
+                    coverImage: 'https://via.placeholder.com/300x160?text=React',
+                    teacherId: 1
+                },
+                {
+                    title: '高等数学基础',
+                    description: '大学数学基础课程',
+                    level: 'beginner',
+                    category: 'math',
+                    coverImage: 'https://via.placeholder.com/300x160?text=数学',
+                    teacherId: 1
+                },
+                {
+                    title: '物理学导论',
+                    description: '基础物理学知识介绍',
+                    level: 'beginner',
+                    category: 'physics',
+                    coverImage: 'https://via.placeholder.com/300x160?text=物理',
+                    teacherId: 1
+                }
+            ];
+
+            await Course.bulkCreate(testCourses);
+            console.log('测试数据创建成功');
+        }
+    } catch (error) {
+        console.error('创建测试数据失败:', error);
+    }
+};
+
+// 初始化测试数据
+createTestData();
+
 // 创建新课程
 exports.createCourse = async (req, res) => {
     try {
+        console.log('接收到创建新课程请求:', req.body);
         const { title, description, level, category, coverImage } = req.body;
         const teacherId = req.user.id;
 
@@ -16,15 +68,22 @@ exports.createCourse = async (req, res) => {
             teacherId
         });
 
-        res.status(201).json({
+        console.log('创建课程成功:', course);
+
+        const response = {
             success: true,
             data: course
-        });
+        };
+
+        console.log('返回数据:', JSON.stringify(response, null, 2));
+        res.status(201).json(response);
     } catch (error) {
         console.error('创建课程失败:', error);
         res.status(500).json({
             success: false,
-            error: '创建课程失败'
+            error: '创建课程失败',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
@@ -32,11 +91,13 @@ exports.createCourse = async (req, res) => {
 // 获取课程列表
 exports.getCourses = async (req, res) => {
     try {
+        console.log('接收到获取课程列表请求:', req.query);
         const { page = 1, pageSize = 12, search, category, level } = req.query;
         const offset = (page - 1) * pageSize;
         
         // 构建查询条件
         const where = {};
+        
         if (search) {
             where[Op.or] = [
                 { title: { [Op.like]: `%${search}%` } },
@@ -50,8 +111,11 @@ exports.getCourses = async (req, res) => {
             where.level = level;
         }
 
+        console.log('查询条件:', where);
+
         // 查询课程总数
         const total = await Course.count({ where });
+        console.log('课程总数:', total);
 
         // 查询分页数据
         const courses = await Course.findAll({
@@ -60,7 +124,7 @@ exports.getCourses = async (req, res) => {
                 {
                     model: User,
                     as: 'teacher',
-                    attributes: ['id', 'username', 'avatar']
+                    attributes: ['id', 'name', 'username', 'email']
                 }
             ],
             limit: parseInt(pageSize),
@@ -68,7 +132,9 @@ exports.getCourses = async (req, res) => {
             order: [['createdAt', 'DESC']]
         });
 
-        res.json({
+        console.log('查询到的课程数量:', courses.length);
+
+        const response = {
             success: true,
             data: {
                 list: courses,
@@ -78,12 +144,19 @@ exports.getCourses = async (req, res) => {
                     total
                 }
             }
-        });
+        };
+
+        console.log('返回数据:', JSON.stringify(response, null, 2));
+        res.json(response);
     } catch (error) {
         console.error('获取课程列表失败:', error);
         res.status(500).json({
             success: false,
-            message: '获取课程列表失败'
+            message: '获取课程列表失败',
+            error: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                stack: error.stack
+            } : undefined
         });
     }
 };
@@ -91,6 +164,7 @@ exports.getCourses = async (req, res) => {
 // 获取课程详情
 exports.getCourseById = async (req, res) => {
     try {
+        console.log('接收到获取课程详情请求:', req.params);
         const { id } = req.params;
         const course = await Course.findByPk(id, {
             include: [
@@ -105,6 +179,8 @@ exports.getCourseById = async (req, res) => {
                 }
             ]
         });
+
+        console.log('查询到的课程详情:', course);
 
         if (!course) {
             return res.status(404).json({
@@ -124,19 +200,24 @@ exports.getCourseById = async (req, res) => {
             });
         }
 
-        res.json({
+        const response = {
             success: true,
             data: {
                 ...course.toJSON(),
                 enrolled: !!enrollment,
                 progress: enrollment ? enrollment.progress : 0
             }
-        });
+        };
+
+        console.log('返回数据:', JSON.stringify(response, null, 2));
+        res.json(response);
     } catch (error) {
         console.error('获取课程详情失败:', error);
         res.status(500).json({
             success: false,
-            error: '获取课程详情失败'
+            error: '获取课程详情失败',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
@@ -144,6 +225,7 @@ exports.getCourseById = async (req, res) => {
 // 更新课程信息
 exports.updateCourse = async (req, res) => {
     try {
+        console.log('接收到更新课程信息请求:', req.body);
         const { id } = req.params;
         const { title, description, level, category, coverImage } = req.body;
         const teacherId = req.user.id;
@@ -151,6 +233,8 @@ exports.updateCourse = async (req, res) => {
         const course = await Course.findOne({
             where: { id, teacherId }
         });
+
+        console.log('查询到的课程信息:', course);
 
         if (!course) {
             return res.status(404).json({
@@ -167,15 +251,22 @@ exports.updateCourse = async (req, res) => {
             coverImage
         });
 
-        res.json({
+        console.log('更新课程信息成功:', course);
+
+        const response = {
             success: true,
             data: course
-        });
+        };
+
+        console.log('返回数据:', JSON.stringify(response, null, 2));
+        res.json(response);
     } catch (error) {
         console.error('更新课程失败:', error);
         res.status(500).json({
             success: false,
-            error: '更新课程失败'
+            error: '更新课程失败',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
@@ -183,12 +274,15 @@ exports.updateCourse = async (req, res) => {
 // 删除课程
 exports.deleteCourse = async (req, res) => {
     try {
+        console.log('接收到删除课程请求:', req.params);
         const { id } = req.params;
         const teacherId = req.user.id;
 
         const course = await Course.findOne({
             where: { id, teacherId }
         });
+
+        console.log('查询到的课程信息:', course);
 
         if (!course) {
             return res.status(404).json({
@@ -199,15 +293,22 @@ exports.deleteCourse = async (req, res) => {
 
         await course.destroy();
 
-        res.json({
+        console.log('删除课程成功');
+
+        const response = {
             success: true,
             message: '课程已删除'
-        });
+        };
+
+        console.log('返回数据:', JSON.stringify(response, null, 2));
+        res.json(response);
     } catch (error) {
         console.error('删除课程失败:', error);
         res.status(500).json({
             success: false,
-            error: '删除课程失败'
+            error: '删除课程失败',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
@@ -215,11 +316,14 @@ exports.deleteCourse = async (req, res) => {
 // 选课
 exports.enrollCourse = async (req, res) => {
     try {
+        console.log('接收到选课请求:', req.params);
         const { courseId } = req.params;
         const studentId = req.user.id;
 
         // 检查课程是否存在
         const course = await Course.findByPk(courseId);
+        console.log('查询到的课程信息:', course);
+
         if (!course) {
             return res.status(404).json({
                 success: false,
@@ -235,6 +339,8 @@ exports.enrollCourse = async (req, res) => {
             }
         });
 
+        console.log('检查选课信息:', existingEnrollment);
+
         if (existingEnrollment) {
             return res.status(400).json({
                 success: false,
@@ -248,15 +354,22 @@ exports.enrollCourse = async (req, res) => {
             studentId
         });
 
-        res.status(201).json({
+        console.log('创建选课记录成功:', enrollment);
+
+        const response = {
             success: true,
             data: enrollment
-        });
+        };
+
+        console.log('返回数据:', JSON.stringify(response, null, 2));
+        res.status(201).json(response);
     } catch (error) {
         console.error('选课失败:', error);
         res.status(500).json({
             success: false,
-            error: '选课失败'
+            error: '选课失败',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
@@ -264,6 +377,7 @@ exports.enrollCourse = async (req, res) => {
 // 更新学习进度
 exports.updateProgress = async (req, res) => {
     try {
+        console.log('接收到更新学习进度请求:', req.body);
         const { courseId } = req.params;
         const { lessonId, completed } = req.body;
         const studentId = req.user.id;
@@ -274,6 +388,8 @@ exports.updateProgress = async (req, res) => {
                 studentId
             }
         });
+
+        console.log('查询到的选课信息:', enrollment);
 
         if (!enrollment) {
             return res.status(404).json({
@@ -300,18 +416,25 @@ exports.updateProgress = async (req, res) => {
             lastAccessedAt: new Date()
         });
 
-        res.json({
+        console.log('更新学习进度成功:', enrollment);
+
+        const response = {
             success: true,
             data: {
                 progress,
                 completedLessons
             }
-        });
+        };
+
+        console.log('返回数据:', JSON.stringify(response, null, 2));
+        res.json(response);
     } catch (error) {
         console.error('更新进度失败:', error);
         res.status(500).json({
             success: false,
-            error: '更新进度失败'
+            error: '更新进度失败',
+            message: error.message,
+            stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };

@@ -28,8 +28,12 @@ const Lesson = sequelize.define('Lesson', {
         allowNull: false,
         defaultValue: 0
     },
+    videoUrl: {
+        type: DataTypes.STRING,
+        allowNull: true
+    },
     duration: {
-        type: DataTypes.INTEGER, // 单位：分钟
+        type: DataTypes.INTEGER, // 单位：秒
         allowNull: true
     },
     resources: {

@@ -1,23 +1,15 @@
 import React, { useEffect, useState } from 'react';
-import { Layout as AntLayout, Menu, theme } from 'antd';
-import { Outlet, useNavigate, useLocation, Navigate } from 'react-router-dom';
-import {
-  UserOutlined,
-  BookOutlined,
-  MessageOutlined,
-  LogoutOutlined,
-  DashboardOutlined,
-  TeamOutlined,
-  FileTextOutlined,
-} from '@ant-design/icons';
+import { Layout as AntLayout } from 'antd';
+import { Navigate, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import SideMenu from './SideMenu';
+import './Layout.css';
 
-const { Header, Content, Sider } = AntLayout;
+const { Content, Sider } = AntLayout;
 
 const Layout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userRole, setUserRole] = useState(null);
-  const { token } = theme.useToken();
 
   // 检查用户是否已登录
   const isAuthenticated = localStorage.getItem('token');
@@ -33,80 +25,10 @@ const Layout = () => {
     setUserRole(userInfo.role || 'student'); // 默认为学生角色
   }, []);
 
-  const getMenuItems = () => {
-    const commonItems = [
-      {
-        key: 'profile',
-        icon: <UserOutlined />,
-        label: '个人中心',
-        onClick: () => navigate('/profile'),
-      },
-      {
-        key: 'logout',
-        icon: <LogoutOutlined />,
-        label: '退出登录',
-        onClick: () => {
-          localStorage.removeItem('token');
-          localStorage.removeItem('userInfo');
-          navigate('/login');
-        },
-      },
-    ];
-
-    const studentItems = [
-      {
-        key: 'student-dashboard',
-        icon: <DashboardOutlined />,
-        label: '仪表盘',
-        onClick: () => navigate('/student/dashboard'),
-      },
-      {
-        key: 'student-courses',
-        icon: <BookOutlined />,
-        label: '我的课程',
-        onClick: () => navigate('/student/courses'),
-      },
-      {
-        key: 'student-assignments',
-        icon: <FileTextOutlined />,
-        label: '我的作业',
-        onClick: () => navigate('/student/assignments'),
-      },
-      {
-        key: 'student-ai-chat',
-        icon: <MessageOutlined />,
-        label: 'AI助手',
-        onClick: () => navigate('/ai/chat'),
-      },
-    ];
-
-    const teacherItems = [
-      {
-        key: 'teacher-dashboard',
-        icon: <DashboardOutlined />,
-        label: '仪表盘',
-        onClick: () => navigate('/teacher/dashboard'),
-      },
-      {
-        key: 'teacher-students',
-        icon: <TeamOutlined />,
-        label: '学生管理',
-        onClick: () => navigate('/teacher/students'),
-      },
-      {
-        key: 'teacher-courses',
-        icon: <BookOutlined />,
-        label: '课程管理',
-        onClick: () => navigate('/teacher/courses'),
-      },
-    ];
-
-    return userRole === 'teacher' ? [...teacherItems, ...commonItems] : [...studentItems, ...commonItems];
-  };
-
   return (
     <AntLayout style={{ minHeight: '100vh' }}>
       <Sider
+        width={220}
         theme="light"
         style={{
           overflow: 'auto',
@@ -115,21 +37,12 @@ const Layout = () => {
           left: 0,
           top: 0,
           bottom: 0,
-          borderRight: `1px solid ${token.colorBorder}`,
         }}
       >
-        <div style={{ height: '64px', padding: '16px', textAlign: 'center' }}>
-          <h2 style={{ margin: 0 }}>AI辅导系统</h2>
-        </div>
-        <Menu
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          items={getMenuItems()}
-          style={{ borderRight: 'none' }}
-        />
+        <SideMenu />
       </Sider>
-      <AntLayout style={{ marginLeft: 200 }}>
-        <Content style={{ margin: '24px 16px', padding: 24, minHeight: 280 }}>
+      <AntLayout style={{ marginLeft: 220, background: '#f5f5f5', minHeight: '100vh' }}>
+        <Content style={{ padding: '32px 32px 24px 32px', minHeight: 280 }}>
           <Outlet />
         </Content>
       </AntLayout>

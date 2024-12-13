@@ -1,8 +1,10 @@
 import axios from 'axios';
+import { message } from 'antd';
 
 const instance = axios.create({
-    baseURL: 'http://localhost:5173/api',
+    baseURL: 'http://localhost:3001',
     timeout: 10000,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
     }
@@ -25,7 +27,12 @@ instance.interceptors.request.use(
 // 响应拦截器
 instance.interceptors.response.use(
     (response) => {
-        return response;
+        // 检查响应中的数据格式
+        if (response.data && response.data.success === false) {
+            message.error(response.data.message || '请求失败');
+            return Promise.reject(new Error(response.data.message));
+        }
+        return response.data;
     },
     (error) => {
         if (error.response) {
@@ -33,23 +40,28 @@ instance.interceptors.response.use(
                 case 401:
                     // 未授权，清除token并跳转到登录页
                     localStorage.removeItem('token');
-                    window.location.href = '/login';
+                    localStorage.removeItem('userInfo');
+                    // 保存当前路径
+                    localStorage.setItem('redirectPath', window.location.pathname);
+                    message.error('登录已过期，请重新登录');
+                    // 使用 window.location 而不是 navigate，确保完全刷新
+                    setTimeout(() => {
+                        window.location.href = '/login';
+                    }, 1000);
                     break;
                 case 403:
-                    // 权限不足
-                    console.error('没有权限执行此操作');
+                    message.error('没有权限执行此操作');
                     break;
                 case 500:
-                    // 服务器错误
-                    console.error('服务器错误');
+                    message.error('服务器错误');
                     break;
                 default:
-                    console.error(error.response.data.message || '请求失败');
+                    message.error(error.response.data?.message || '请求失败');
             }
         } else if (error.request) {
-            console.error('无法连接到服务器');
+            message.error('无法连接到服务器');
         } else {
-            console.error('请求配置错误');
+            message.error('请求出错');
         }
         return Promise.reject(error);
     }

@@ -2,6 +2,8 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 require('dotenv').config();
 
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+
 exports.authenticate = async (req, res, next) => {
     try {
         // 从请求头获取token
@@ -9,21 +11,38 @@ exports.authenticate = async (req, res, next) => {
         if (!authHeader) {
             return res.status(401).json({
                 success: false,
-                message: '请先登录'
+                message: '未找到认证令牌，请先登录'
             });
         }
 
         const token = authHeader.replace('Bearer ', '');
         
         // 验证token
-        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key');
+        let decoded;
+        try {
+            decoded = jwt.verify(token, JWT_SECRET);
+        } catch (error) {
+            if (error.name === 'TokenExpiredError') {
+                return res.status(401).json({
+                    success: false,
+                    message: '登录已过期，请重新登录'
+                });
+            }
+            if (error.name === 'JsonWebTokenError') {
+                return res.status(401).json({
+                    success: false,
+                    message: '无效的认证令牌'
+                });
+            }
+            throw error;
+        }
         
         // 查找用户
         const user = await User.findByPk(decoded.userId);
         if (!user) {
             return res.status(401).json({
                 success: false,
-                message: '用户不存在'
+                message: '用户不存在或已被删除'
             });
         }
 
@@ -34,7 +53,7 @@ exports.authenticate = async (req, res, next) => {
         console.error('认证失败:', error);
         res.status(401).json({
             success: false,
-            message: '认证失败'
+            message: '认证失败：' + (error.message || '未知错误')
         });
     }
 };
@@ -45,7 +64,7 @@ exports.checkRole = (roles) => {
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({
                 success: false,
-                message: '没有权限执行此操作'
+                message: '权限不足，无法访问此资源'
             });
         }
         next();

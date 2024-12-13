@@ -5,8 +5,8 @@ import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import StudentDashboard from './pages/student/Dashboard';
-import CourseList from './pages/student/courses/CourseList';
-import CourseDetail from './pages/student/courses/CourseDetail';
+import Courses from './pages/student/Courses';  
+import CourseDetail from './pages/courses/CourseDetail';
 import StudentAssignments from './pages/student/Assignments';
 import AssignmentDetail from './pages/student/AssignmentDetail';
 import Chat from './pages/ai/Chat';
@@ -44,7 +44,7 @@ const router = createBrowserRouter([
           },
           {
             path: 'courses',
-            element: <CourseList />
+            element: <Courses />  
           },
           {
             path: 'courses/:id',

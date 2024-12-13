@@ -2,12 +2,12 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const sequelize = require('./config/database');
-const setupAssociations = require('./models/associations');
 const userRoutes = require('./routes/userRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
 const studentCourseRoutes = require('./routes/studentCourseRoutes');
+const authRoutes = require('./routes/authRoutes');
 const path = require('path');
 
 // 设置环境变量
@@ -22,19 +22,19 @@ process.on('unhandledRejection', (err) => {
     console.error('未处理的Promise拒绝:', err);
 });
 
-// 设置模型关联关系
-try {
-    setupAssociations();
-    console.log('模型关联设置成功');
-} catch (error) {
-    console.error('设置模型关联失败:', error);
-}
-
 const app = express();
 
 // CORS配置
 app.use(cors({
-    origin: ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3001'],
+    origin: function(origin, callback) {
+        const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3001'];
+        // 允许没有origin的请求（比如来自Postman的请求）
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('不允许的来源'));
+        }
+    },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
@@ -45,6 +45,16 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// 请求日志中间件
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+    // 添加更多的请求信息日志
+    if (req.headers.authorization) {
+        console.log('Token present in request');
+    }
+    next();
+});
+
 // 测试路由
 app.get('/', (req, res) => {
     res.json({ message: 'API is working' });
@@ -54,14 +64,15 @@ app.get('/', (req, res) => {
 app.use('/api/users', userRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/courses', courseRoutes);
-app.use('/api', assignmentRoutes);
-app.use('/api/student', studentCourseRoutes);
+app.use('/api/assignments', assignmentRoutes);
+app.use('/api/student/courses', studentCourseRoutes);
+app.use('/api/auth', authRoutes);
 
-// 错误处理
+// 错误处理中间件
 app.use((err, req, res, next) => {
-    console.error('Error:', err.stack);
-    res.status(500).json({ 
-        success: false, 
+    console.error('服务器错误:', err);
+    res.status(500).json({
+        success: false,
         message: '服务器错误',
         error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
@@ -73,12 +84,21 @@ async function startServer() {
     try {
         // 测试数据库连接
         await sequelize.authenticate();
-        console.log('数据库连接成功');
+        console.log('数据库连接成功.');
         
         // 同步数据库模型（在开发环境中使用）
         if (process.env.NODE_ENV === 'development') {
-            await sequelize.sync({ alter: true });
+            await sequelize.sync({ force: true });
             console.log('数据库模型同步成功');
+
+            // 初始化测试数据
+            try {
+                const seed = require('./seeders/20241213-demo-data');
+                await seed.up(sequelize.getQueryInterface(), sequelize);
+                console.log('测试数据初始化成功');
+            } catch (error) {
+                console.error('初始化测试数据失败:', error);
+            }
         }
         
         // 启动服务器

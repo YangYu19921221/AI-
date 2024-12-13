@@ -14,7 +14,7 @@ const Login = () => {
 
     const onFinish = async (values) => {
         try {
-            const response = await axios.post('/api/users/login', values);
+            const response = await axios.post('/api/auth/login', values);
             
             if (response.data.success) {
                 const { token, user } = response.data.data;
@@ -23,7 +23,7 @@ const Login = () => {
                 
                 message.success('登录成功！');
                 
-                // 根据用户角色导航到不同的仪表盘
+                // 直接导航到对应角色的仪表盘
                 const dashboardPath = user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
                 navigate(dashboardPath);
             } else {
