@@ -1,0 +1,441 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Noto+Sans+SC:wght@400;500;700&display=swap');
+
+/* 全局样式 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 
+        'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-color);
+  position: relative;
+  overflow-x: hidden;
+}
+
+:root {
+    --primary-color: #00f2fe;
+    --secondary-color: #4facfe;
+    --accent-color: #7367f0;
+    --text-color: #fff;
+    --bg-dark: #1a1f35;
+    --card-bg: rgba(255, 255, 255, 0.1);
+    --border-color: rgba(255, 255, 255, 0.2);
+    --ink-bg: #f5f5f5;
+    --border-radius: 8px;
+}
+
+/* 科技感背景 */
+.tech-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(to bottom right, rgba(0, 242, 254, 0.1), rgba(115, 103, 240, 0.1)),
+        radial-gradient(circle at 10% 20%, rgba(0, 242, 254, 0.05) 0%, transparent 20%),
+        radial-gradient(circle at 90% 80%, rgba(115, 103, 240, 0.05) 0%, transparent 20%);
+    z-index: -1;
+}
+
+.tech-bg::before {
+    content: '';
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background-image: 
+        linear-gradient(45deg, var(--bg-dark) 25%, transparent 25%),
+        linear-gradient(-45deg, var(--bg-dark) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, var(--bg-dark) 75%),
+        linear-gradient(-45deg, transparent 75%, var(--bg-dark) 75%);
+    background-size: 20px 20px;
+    opacity: 0.1;
+    animation: bgMove 30s linear infinite;
+}
+
+@keyframes bgMove {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* 响应式容器 */
+.responsive-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 15px;
+}
+
+/* 响应式卡片 */
+.responsive-card {
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+/* 响应式表单 */
+.responsive-form {
+  width: 100%;
+}
+
+/* 科技感卡片 */
+.tech-card {
+    background: var(--card-bg);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.tech-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    animation: borderGlow 2s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* 科技感输入框 */
+.tech-input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    color: var(--text-color) !important;
+    transition: all 0.3s ease !important;
+}
+
+.tech-input:hover, .tech-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.3) !important;
+}
+
+.tech-input input {
+    color: var(--text-color) !important;
+}
+
+/* 科技感按钮 */
+.tech-button {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) !important;
+    border: none !important;
+    border-radius: 8px !important;
+    color: var(--bg-dark) !important;
+    font-weight: 500 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    position: relative !important;
+    overflow: hidden !important;
+    transition: all 0.3s ease !important;
+}
+
+.tech-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 242, 254, 0.4) !important;
+}
+
+.tech-button::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transform: rotate(45deg);
+    animation: buttonGlow 2s linear infinite;
+}
+
+@keyframes buttonGlow {
+    0% {
+        transform: rotate(45deg) translateX(-100%);
+    }
+    100% {
+        transform: rotate(45deg) translateX(100%);
+    }
+}
+
+/* 科技感标题 */
+.tech-title {
+    font-family: 'Orbitron', sans-serif;
+    color: var(--text-color);
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 30px;
+    position: relative;
+    text-shadow: 0 0 10px rgba(0, 242, 254, 0.5);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .tech-card {
+        margin: 16px;
+        padding: 20px;
+    }
+    
+    .tech-title {
+        font-size: 24px;
+    }
+}
+
+/* 动画效果 */
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 科技感装饰元素 */
+.tech-decoration {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    opacity: 0.1;
+    pointer-events: none;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+    .responsive-container {
+        padding: 0 10px;
+    }
+
+    .responsive-card {
+        margin: 10px auto;
+    }
+
+    .ant-form-item {
+        margin-bottom: 16px;
+    }
+}
+
+/* 平板适配 */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .responsive-container {
+        padding: 0 20px;
+    }
+}
+
+/* 桌面端适配 */
+@media (min-width: 1025px) {
+    .responsive-container {
+        padding: 0 30px;
+    }
+}
+
+/* 阴影效果 */
+.box-shadow {
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 过渡动画 */
+.transition {
+    transition: all 0.3s ease;
+}
+
+/* 响应式文本 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 24px;
+    }
+    h2 {
+        font-size: 20px;
+    }
+    p {
+        font-size: 14px;
+    }
+}
+
+/* 响应式按钮 */
+@media (max-width: 768px) {
+    .ant-btn {
+        font-size: 14px;
+        height: 32px;
+        padding: 4px 15px;
+    }
+}
+
+/* 响应式布局 */
+@media screen and (max-width: 768px) {
+  .ant-layout-sider {
+    flex: 0 0 0 !important;
+    max-width: 0 !important;
+    min-width: 0 !important;
+    width: 0 !important;
+  }
+
+  .mobile-menu {
+    display: block !important;
+  }
+
+  .desktop-menu {
+    display: none !important;
+  }
+
+  .ant-layout-header {
+    padding: 0 10px !important;
+  }
+
+  .ant-card {
+    margin: 10px;
+  }
+}
+
+/* 移动端菜单 */
+.mobile-menu {
+  display: none;
+}
+
+/* 移动端抽屉菜单 */
+.drawer-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+
+/* 中国风设计元素 */
+.chinese-card {
+    background: white;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.chinese-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+}
+
+.chinese-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+}
+
+.chinese-input {
+    border: 2px solid #e8e8e8 !important;
+    border-radius: var(--border-radius) !important;
+    transition: all 0.3s ease !important;
+}
+
+.chinese-input:hover, .chinese-input:focus {
+    border-color: var(--primary-color) !important;
+    box-shadow: 0 0 0 2px rgba(212, 56, 13, 0.1) !important;
+}
+
+.chinese-button {
+    background: linear-gradient(45deg, var(--primary-color), var(--secondary-color)) !important;
+    border: none !important;
+    border-radius: var(--border-radius) !important;
+    color: white !important;
+    font-weight: 500 !important;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+.chinese-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(212, 56, 13, 0.3) !important;
+}
+
+.chinese-title {
+    font-size: 28px;
+    color: var(--text-color);
+    text-align: center;
+    margin-bottom: 24px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    position: relative;
+    display: inline-block;
+}
+
+.chinese-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 3px;
+}
+
+/* 水墨动画效果 */
+.ink-animation {
+    position: relative;
+    overflow: hidden;
+}
+
+.ink-animation::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(0,0,0,0.05);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.6s ease-out, height 0.6s ease-out;
+}
+
+.ink-animation:hover::after {
+    width: 300px;
+    height: 300px;
+}
+
+/* 古风装饰元素 */
+.chinese-decoration {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    opacity: 0.1;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M50 0 L100 50 L50 100 L0 50Z" fill="none" stroke="black" stroke-width="2"/></svg>');
+    background-size: contain;
+    pointer-events: none;
+}

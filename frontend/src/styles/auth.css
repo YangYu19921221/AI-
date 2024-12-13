@@ -1,0 +1,207 @@
+/* 动画效果 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.2;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+}
+
+/* 登录注册页面通用样式 */
+.auth-container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
+  overflow: hidden;
+  padding: 20px;
+}
+
+.auth-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  position: relative;
+  z-index: 1;
+  animation: fadeIn 0.5s ease-out;
+}
+
+.auth-title {
+  color: #fff;
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5em;
+  font-weight: 700;
+  letter-spacing: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.auth-subtitle {
+  font-size: 0.4em;
+  font-weight: 400;
+  opacity: 0.8;
+  letter-spacing: 1px;
+}
+
+.auth-form {
+  width: 100%;
+}
+
+.auth-form .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.auth-form .ant-input-affix-wrapper {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 8px !important;
+}
+
+.auth-form .ant-input {
+  background: transparent !important;
+  color: #fff !important;
+}
+
+.auth-form .ant-input-password-icon {
+  color: rgba(255, 255, 255, 0.45) !important;
+}
+
+.auth-form .ant-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.auth-form .ant-btn {
+  width: 100%;
+  height: 45px;
+  border-radius: 8px !important;
+  font-size: 16px;
+  font-weight: 600;
+  margin-top: 10px;
+  background: linear-gradient(45deg, #646cff 0%, #8086ff 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+  transition: all 0.3s ease;
+}
+
+.auth-form .ant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(100, 108, 255, 0.4);
+  opacity: 0.9;
+}
+
+.auth-links {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.auth-links a {
+  color: #646cff;
+  text-decoration: none;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.auth-links a:hover {
+  color: #8086ff;
+}
+
+.verification-code-container {
+  display: flex;
+  gap: 10px;
+}
+
+.verification-code-container .ant-input {
+  flex: 1;
+}
+
+.verification-code-button {
+  width: 120px !important;
+  height: 40px !important;
+  padding: 0 10px !important;
+  white-space: nowrap;
+}
+
+.auth-form-forgot {
+  float: right;
+  margin-bottom: 10px;
+}
+
+/* 装饰圆圈 */
+.decoration-circle {
+  position: absolute;
+  border-radius: 50%;
+  background: linear-gradient(45deg, #646cff 0%, #8086ff 100%);
+  opacity: 0.1;
+  animation: pulse 4s infinite;
+}
+
+.decoration-circle-1 {
+  width: 300px;
+  height: 300px;
+  top: -150px;
+  right: -150px;
+  animation-delay: 0s;
+}
+
+.decoration-circle-2 {
+  width: 200px;
+  height: 200px;
+  bottom: -100px;
+  left: -100px;
+  animation-delay: 2s;
+}
+
+/* 响应式调整 */
+@media (max-width: 480px) {
+  .auth-card {
+    padding: 30px 20px;
+  }
+
+  .auth-title {
+    font-size: 2em;
+  }
+}
+
+/* 暗色主题适配 */
+@media (prefers-color-scheme: dark) {
+  .auth-form .ant-input-affix-wrapper {
+    background: rgba(255, 255, 255, 0.05) !important;
+  }
+
+  .auth-form .ant-input {
+    color: #fff !important;
+  }
+
+  .auth-form .ant-form-item-label > label {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+}
