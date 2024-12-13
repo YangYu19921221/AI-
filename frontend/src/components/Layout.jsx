@@ -10,6 +10,8 @@ import {
   TeamOutlined,
   QuestionCircleOutlined,
   ScheduleOutlined,
+  FileTextOutlined,
+  EditOutlined,
 } from '@ant-design/icons';
 
 const { Header, Content, Sider } = AntLayout;
@@ -71,6 +73,12 @@ const Layout = () => {
         label: '题库管理',
         onClick: () => navigate('/teacher/exercises'),
       },
+      {
+        key: '/teacher/assignments',
+        icon: <FileTextOutlined />,
+        label: '作业管理',
+        onClick: () => navigate('/teacher/assignments'),
+      },
     ];
 
     const studentItems = [
@@ -97,6 +105,12 @@ const Layout = () => {
         icon: <MessageOutlined />,
         label: 'AI辅导',
         onClick: () => navigate('/student/ai-chat'),
+      },
+      {
+        key: '/student/assignments',
+        icon: <EditOutlined />,
+        label: '我的作业',
+        onClick: () => navigate('/student/assignments'),
       },
     ];
 

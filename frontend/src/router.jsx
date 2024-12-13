@@ -6,6 +6,8 @@ import ForgotPassword from './pages/ForgotPassword';
 import TeacherDashboard from './pages/teacher/Dashboard';
 import StudentDashboard from './pages/student/Dashboard';
 import StudentCourses from './pages/student/Courses';
+import StudentAssignments from './pages/student/Assignments';
+import AssignmentDetail from './pages/student/AssignmentDetail';
 import Chat from './pages/ai/Chat';
 
 const router = createBrowserRouter([
@@ -36,6 +38,22 @@ const router = createBrowserRouter([
           {
             path: 'exercises',
             element: <div>题库管理</div>
+          },
+          {
+            path: 'assignments',
+            element: <div>作业管理</div>
+          },
+          {
+            path: 'assignments/create',
+            element: <div>创建作业</div>
+          },
+          {
+            path: 'assignments/:id',
+            element: <div>作业详情</div>
+          },
+          {
+            path: 'assignments/:id/grade',
+            element: <div>批改作业</div>
           }
         ]
       },
@@ -58,6 +76,14 @@ const router = createBrowserRouter([
           {
             path: 'ai-chat',
             element: <Chat />
+          },
+          {
+            path: 'assignments',
+            element: <StudentAssignments />
+          },
+          {
+            path: 'assignments/:id',
+            element: <AssignmentDetail />
           }
         ]
       },
