@@ -14,22 +14,28 @@ const Login = () => {
 
     const onFinish = async (values) => {
         try {
-            const response = await axios.post('/api/users/login', values, {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                withCredentials: true
-            });
+            const response = await axios.post('/api/users/login', values);
             
             if (response.data.success) {
+                const { token, user } = response.data.data;
+                localStorage.setItem('token', token);
+                localStorage.setItem('userInfo', JSON.stringify(user));
+                
                 message.success('登录成功！');
-                localStorage.setItem('token', response.data.token);
-                localStorage.setItem('user', JSON.stringify(response.data.user));
-                navigate(response.data.user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard');
+                
+                // 根据用户角色导航到不同的仪表盘
+                const dashboardPath = user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
+                navigate(dashboardPath);
+            } else {
+                message.error(response.data.message || '登录失败');
             }
         } catch (error) {
             console.error('Login error:', error);
-            message.error('登录失败：' + (error.response?.data?.message || '未知错误'));
+            if (error.response?.status === 401) {
+                message.error('用户名或密码错误');
+            } else {
+                message.error('登录失败：' + (error.response?.data?.message || '服务器错误'));
+            }
         }
     };
 
@@ -49,44 +55,48 @@ const Login = () => {
                     className="auth-form"
                     onFinish={onFinish}
                     autoComplete="off"
-                    size="large"
                 >
                     <Form.Item
                         name="username"
                         rules={[
-                            { required: true, message: '请输入用户名！' }
+                            {
+                                required: true,
+                                message: '请输入用户名',
+                            },
                         ]}
                     >
                         <Input 
-                            prefix={<UserOutlined />}
-                            placeholder="请输入用户名"
+                            prefix={<UserOutlined />} 
+                            placeholder="用户名" 
+                            size="large"
                         />
                     </Form.Item>
 
                     <Form.Item
                         name="password"
                         rules={[
-                            { required: true, message: '请输入密码！' },
-                            { min: 6, message: '密码至少6个字符！' }
+                            {
+                                required: true,
+                                message: '请输入密码',
+                            },
                         ]}
                     >
                         <Input.Password
                             prefix={<LockOutlined />}
-                            placeholder="请输入密码"
+                            placeholder="密码"
+                            size="large"
                         />
                     </Form.Item>
 
                     <Form.Item>
-                        <div className="auth-form-forgot">
-                            <Link to="/forgot-password">忘记密码？</Link>
-                        </div>
-                        <Button type="primary" htmlType="submit">
+                        <Button type="primary" htmlType="submit" className="auth-button" size="large">
                             登录
                         </Button>
                     </Form.Item>
 
                     <div className="auth-links">
-                        <Link to="/register">还没有账号？立即注册</Link>
+                        <Link to="/register">注册账号</Link>
+                        <Link to="/forgot-password">忘记密码？</Link>
                     </div>
                 </Form>
             </div>

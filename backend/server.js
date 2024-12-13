@@ -3,6 +3,8 @@ const cors = require('cors');
 require('dotenv').config();
 const sequelize = require('./config/database');
 const userRoutes = require('./routes/userRoutes');
+const aiRoutes = require('./routes/aiRoutes');
+const courseRoutes = require('./routes/courseRoutes');
 const path = require('path');
 
 const app = express();
@@ -27,6 +29,8 @@ app.get('/', (req, res) => {
 
 // 路由
 app.use('/api/users', userRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/courses', courseRoutes);
 
 // 错误处理
 app.use((err, req, res, next) => {
@@ -47,10 +51,9 @@ async function startServer() {
         
         app.listen(PORT, '0.0.0.0', () => {
             console.log(`服务器运行在 http://localhost:${PORT}`);
-            console.log('允许的源:', ['http://localhost:5173', 'http://127.0.0.1:5173']);
         });
     } catch (error) {
-        console.error('启动失败:', error);
+        console.error('启动服务器失败:', error);
         process.exit(1);
     }
 }

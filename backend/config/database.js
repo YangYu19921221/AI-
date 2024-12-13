@@ -2,8 +2,8 @@ const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
 const sequelize = new Sequelize(
-    'postgres',  // 使用默认的postgres数据库
-    'postgres',  // 默认用户名
+    'ai_education',  // 数据库名称
+    'postgres',      // 用户名
     process.env.DB_PASS,
     {
         host: 'localhost',
