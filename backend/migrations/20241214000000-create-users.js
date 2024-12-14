@@ -10,7 +10,12 @@ module.exports = {
         type: Sequelize.INTEGER
       },
       username: {
-        type: Sequelize.STRING,
+        type: Sequelize.STRING(50),
+        allowNull: false,
+        unique: true
+      },
+      email: {
+        type: Sequelize.STRING(100),
         allowNull: false,
         unique: true
       },
@@ -18,20 +23,35 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false
       },
-      phone: {
-        type: Sequelize.STRING(11),
-        allowNull: false,
-        unique: true
+      fullName: {
+        type: Sequelize.STRING(100),
+        allowNull: false
       },
       role: {
-        type: Sequelize.ENUM('student', 'teacher', 'admin'),
+        type: Sequelize.ENUM('admin', 'teacher', 'student'),
         allowNull: false,
         defaultValue: 'student'
       },
       status: {
-        type: Sequelize.ENUM('active', 'inactive', 'banned'),
+        type: Sequelize.ENUM('active', 'inactive', 'suspended'),
         allowNull: false,
         defaultValue: 'active'
+      },
+      phone: {
+        type: Sequelize.STRING(20),
+        allowNull: true
+      },
+      avatar: {
+        type: Sequelize.STRING(500),
+        allowNull: true
+      },
+      bio: {
+        type: Sequelize.TEXT,
+        allowNull: true
+      },
+      grade: {
+        type: Sequelize.STRING(20),
+        allowNull: true
       },
       lastLoginAt: {
         type: Sequelize.DATE,
@@ -46,7 +66,14 @@ module.exports = {
         type: Sequelize.DATE
       }
     });
+
+    // 添加索引
+    await queryInterface.addIndex('Users', ['email']);
+    await queryInterface.addIndex('Users', ['username']);
+    await queryInterface.addIndex('Users', ['role']);
+    await queryInterface.addIndex('Users', ['status']);
   },
+
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('Users');
   }

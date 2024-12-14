@@ -58,8 +58,8 @@ exports.authenticate = async (req, res, next) => {
     }
 };
 
-// 检查用户角色的中间件
-exports.checkRole = (roles) => {
+// 角色验证中间件
+exports.authorize = (roles) => {
     return (req, res, next) => {
         if (!roles.includes(req.user.role)) {
             return res.status(403).json({

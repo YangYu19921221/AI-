@@ -2,20 +2,12 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
-    // 先创建枚举类型
-    await queryInterface.sequelize.query(`
-      DO $$ BEGIN
-        CREATE TYPE "enum_submissions_status" AS ENUM ('draft', 'submitted', 'graded');
-      EXCEPTION
-        WHEN duplicate_object THEN null;
-      END $$;
-    `);
-
     await queryInterface.createTable('Submissions', {
       id: {
-        type: Sequelize.INTEGER,
+        allowNull: false,
+        autoIncrement: true,
         primaryKey: true,
-        autoIncrement: true
+        type: Sequelize.INTEGER
       },
       assignmentId: {
         type: Sequelize.INTEGER,
@@ -39,11 +31,12 @@ module.exports = {
       },
       content: {
         type: Sequelize.TEXT,
-        allowNull: true
+        allowNull: false
       },
-      attachments: {
-        type: Sequelize.JSON,
-        allowNull: true
+      status: {
+        type: Sequelize.ENUM('submitted', 'graded', 'returned'),
+        allowNull: false,
+        defaultValue: 'submitted'
       },
       score: {
         type: Sequelize.INTEGER,
@@ -53,39 +46,29 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: true
       },
-      status: {
-        type: "enum_submissions_status",
-        defaultValue: 'draft'
-      },
       submittedAt: {
         type: Sequelize.DATE,
-        allowNull: true
+        allowNull: false,
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       gradedAt: {
         type: Sequelize.DATE,
         allowNull: true
       },
       createdAt: {
+        allowNull: false,
         type: Sequelize.DATE,
-        allowNull: false
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       },
       updatedAt: {
+        allowNull: false,
         type: Sequelize.DATE,
-        allowNull: false
+        defaultValue: Sequelize.literal('CURRENT_TIMESTAMP')
       }
-    });
-
-    await queryInterface.addIndex('Submissions', ['assignmentId']);
-    await queryInterface.addIndex('Submissions', ['studentId']);
-    await queryInterface.addIndex('Submissions', ['status']);
-    await queryInterface.addIndex('Submissions', ['assignmentId', 'studentId'], {
-      unique: true,
-      name: 'submissions_assignment_student_unique'
     });
   },
 
   down: async (queryInterface, Sequelize) => {
     await queryInterface.dropTable('Submissions');
-    await queryInterface.sequelize.query('DROP TYPE IF EXISTS "enum_submissions_status";');
   }
 };

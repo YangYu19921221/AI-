@@ -4,20 +4,23 @@
     "password": "postgres",
     "database": "ai_tutoring",
     "host": "localhost",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "port": 5432
   },
   "test": {
-    "username": "postgres",
-    "password": "postgres",
+    "username": "your_username",
+    "password": "your_password",
     "database": "ai_tutoring_test",
     "host": "localhost",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "port": 5432
   },
   "production": {
-    "username": "postgres",
-    "password": "postgres",
+    "username": "your_username",
+    "password": "your_password",
     "database": "ai_tutoring_production",
     "host": "localhost",
-    "dialect": "postgres"
+    "dialect": "postgres",
+    "port": 5432
   }
 }

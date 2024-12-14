@@ -13,6 +13,8 @@ const initTestAccounts = async () => {
             where: { username: 'teststudent' },
             defaults: {
                 username: 'teststudent',
+                fullName: '测试学生',
+                email: 'student@test.com',
                 phone: '13800000001',
                 password: '123456',
                 role: 'student'
@@ -24,6 +26,8 @@ const initTestAccounts = async () => {
             where: { username: 'testteacher' },
             defaults: {
                 username: 'testteacher',
+                fullName: '测试教师',
+                email: 'teacher@test.com',
                 phone: '13800000002',
                 password: '123456',
                 role: 'teacher'
@@ -35,6 +39,8 @@ const initTestAccounts = async () => {
             where: { username: 'testadmin' },
             defaults: {
                 username: 'testadmin',
+                fullName: '测试管理员',
+                email: 'admin@test.com',
                 phone: '13800000003',
                 password: '123456',
                 role: 'admin'

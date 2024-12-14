@@ -7,7 +7,7 @@ import '../styles/auth.css';
 
 // 配置 axios 默认值
 axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://localhost:3001';
+axios.defaults.baseURL = 'http://localhost:3000';
 
 const Login = () => {
     const navigate = useNavigate();

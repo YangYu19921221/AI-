@@ -27,9 +27,9 @@ const app = express();
 // CORS配置
 app.use(cors({
     origin: function(origin, callback) {
-        const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3001'];
+        const allowedOrigins = ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000', 'http://localhost:3001'];
         // 允许没有origin的请求（比如来自Postman的请求）
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+        if (!origin || allowedOrigins.includes(origin)) {
             callback(null, true);
         } else {
             callback(new Error('不允许的来源'));
@@ -88,26 +88,13 @@ async function startServer() {
         
         // 同步数据库模型（在开发环境中使用）
         if (process.env.NODE_ENV === 'development') {
-            await sequelize.sync({ force: true });
+            await sequelize.sync();
             console.log('数据库模型同步成功');
-
-            // 初始化测试数据
-            try {
-                const seed = require('./seeders/20241213-demo-data');
-                await seed.up(sequelize.getQueryInterface(), sequelize);
-                console.log('测试数据初始化成功');
-            } catch (error) {
-                console.error('初始化测试数据失败:', error);
-            }
         }
         
         // 启动服务器
-        const server = app.listen(PORT, 'localhost', () => {
-            console.log(`服务器运行在 http://localhost:${PORT}`);
-        });
-
-        server.on('error', (error) => {
-            console.error('服务器错误:', error);
+        app.listen(PORT, () => {
+            console.log(`服务器运行在端口 ${PORT}`);
         });
 
     } catch (error) {

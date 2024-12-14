@@ -10,7 +10,8 @@ import {
   Badge,
   Tag,
   Button,
-  Progress
+  Progress,
+  Rate
 } from 'antd';
 import { 
   SearchOutlined,
@@ -51,48 +52,22 @@ const CourseCard = ({ course }) => {
         </div>
       </div>
       <div className="course-card-content">
-        <div className="course-card-header">
-          <Title level={4} className="course-title">{course.title}</Title>
-          <div className="course-tags">
-            <Tag color="blue">{course.category || '未分类'}</Tag>
-            <Tag color="cyan">{course.level || '入门'}</Tag>
-          </div>
-        </div>
-        <Text className="course-description" type="secondary">
-          {course.description || '暂无描述'}
-        </Text>
+        <Title level={4} className="course-title">{course.title}</Title>
+        <Text className="course-description">{course.description}</Text>
         <div className="course-meta">
-          <Space split="·">
-            <span>
-              <UserOutlined /> {course.teacher?.name || '未知讲师'}
-            </span>
-            <span>
-              <BookOutlined /> {course.lessonCount || 0} 课时
-            </span>
+          <Space>
+            <span><UserOutlined /> {course.teacher?.name || '未知教师'}</span>
+            <span><ClockCircleOutlined /> {course.duration ? `${Math.floor(course.duration / 60)}小时` : '时长未定'}</span>
+            <span><BookOutlined /> {course.category}</span>
           </Space>
-        </div>
-        <div className="course-progress">
-          <div className="progress-header">
-            <Text type="secondary">学习进度</Text>
-            <Text type="secondary">{course.progress || 0}%</Text>
-          </div>
-          <Progress 
-            percent={course.progress || 0} 
-            size="small" 
-            showInfo={false}
-            strokeColor={{
-              '0%': '#108ee9',
-              '100%': '#87d068',
-            }}
-          />
         </div>
         <div className="course-footer">
-          <Space>
-            <ClockCircleOutlined />
-            <Text type="secondary">上次学习：{course.lastStudyTime || '尚未开始'}</Text>
-          </Space>
-          <Button type="link" className="continue-btn">
-            继续学习 <RightOutlined />
+          <div className="course-rating">
+            <Rate disabled defaultValue={parseFloat(course.average_rating)} />
+            <Text className="review-count">({course.total_reviews}条评价)</Text>
+          </div>
+          <Button type="link" className="enter-course">
+            进入课程 <RightOutlined />
           </Button>
         </div>
       </div>
@@ -121,7 +96,7 @@ const CourseList = () => {
       if (filters.category && filters.category !== 'all') params.append('category', filters.category);
       if (filters.status && filters.status !== 'all') params.append('status', filters.status);
 
-      const response = await axios.get(`/api/courses?${params.toString()}`);
+      const response = await axios.get(`/courses?${params.toString()}`);
       
       if (response.data.success) {
         setCourses(response.data.data.list || []);

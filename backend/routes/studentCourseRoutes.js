@@ -9,8 +9,8 @@ router.use(authenticate);
 router.use(checkRole('student'));
 
 // 课程相关路由
-router.get('/courses', studentCourseController.getCourses);
-router.get('/courses/:id', studentCourseController.getCourseDetail);
+router.get('/', studentCourseController.getCourses);
+router.get('/:id', studentCourseController.getCourseDetail);
 router.post('/progress', studentCourseController.updateProgress);
 
 module.exports = router;
