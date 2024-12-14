@@ -8,16 +8,16 @@
     "port": 5432
   },
   "test": {
-    "username": "your_username",
-    "password": "your_password",
+    "username": "postgres",
+    "password": "postgres",
     "database": "ai_tutoring_test",
     "host": "localhost",
     "dialect": "postgres",
     "port": 5432
   },
   "production": {
-    "username": "your_username",
-    "password": "your_password",
+    "username": "postgres",
+    "password": "postgres",
     "database": "ai_tutoring_production",
     "host": "localhost",
     "dialect": "postgres",

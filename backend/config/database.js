@@ -1,14 +1,17 @@
 const { Sequelize } = require('sequelize');
 require('dotenv').config();
 
+const config = require('./config.json')[process.env.NODE_ENV || 'development'];
+
 const sequelize = new Sequelize(
-    'ai_tutoring',  // 统一使用ai_tutoring作为数据库名称
-    'yangyu',      // 用户名
-    process.env.DB_PASS,
+    config.database,
+    config.username,
+    config.password,
     {
-        host: 'localhost',
-        dialect: 'postgres',
-        logging: false,
+        host: config.host,
+        dialect: config.dialect,
+        port: config.port,
+        logging: console.log,  // 启用SQL日志
         pool: {
             max: 5,
             min: 0,
@@ -17,5 +20,14 @@ const sequelize = new Sequelize(
         }
     }
 );
+
+// 测试数据库连接
+sequelize.authenticate()
+    .then(() => {
+        console.log('数据库连接成功');
+    })
+    .catch(err => {
+        console.error('数据库连接失败:', err);
+    });
 
 module.exports = sequelize;

@@ -1,8 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/database');
-const User = require('./User');
-const Course = require('./Course');
-const Chapter = require('./Chapter');
 
 const Progress = sequelize.define('Progress', {
     id: {
@@ -10,7 +7,7 @@ const Progress = sequelize.define('Progress', {
         primaryKey: true,
         autoIncrement: true
     },
-    userId: {
+    studentId: {
         type: DataTypes.INTEGER,
         allowNull: false,
         references: {
@@ -18,51 +15,35 @@ const Progress = sequelize.define('Progress', {
             key: 'id'
         }
     },
-    courseId: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: 'Courses',
-            key: 'id'
-        }
-    },
     chapterId: {
         type: DataTypes.INTEGER,
-        allowNull: true,
+        allowNull: false,
         references: {
             model: 'Chapters',
             key: 'id'
         }
     },
+    status: {
+        type: DataTypes.ENUM('not_started', 'in_progress', 'completed'),
+        allowNull: false,
+        defaultValue: 'not_started'
+    },
     progress: {
-        type: DataTypes.INTEGER,  // 0-100 表示百分比
+        type: DataTypes.INTEGER,
+        allowNull: false,
         defaultValue: 0
     },
-    currentTime: {
-        type: DataTypes.INTEGER,  // 视频当前播放位置（秒）
-        defaultValue: 0
-    },
-    completed: {
-        type: DataTypes.BOOLEAN,
-        defaultValue: false
-    },
-    lastStudyTime: {
+    lastAccessedAt: {
         type: DataTypes.DATE,
-        defaultValue: DataTypes.NOW
+        allowNull: true
     },
-    totalTime: {
-        type: DataTypes.INTEGER,  // 总学习时长（分钟）
-        defaultValue: 0
+    completedAt: {
+        type: DataTypes.DATE,
+        allowNull: true
     }
+}, {
+    tableName: 'Progresses',
+    timestamps: true
 });
-
-// 设置关联关系
-Progress.belongsTo(User);
-Progress.belongsTo(Course);
-Progress.belongsTo(Chapter);
-
-User.hasMany(Progress);
-Course.hasMany(Progress);
-Chapter.hasMany(Progress);
 
 module.exports = Progress;

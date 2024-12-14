@@ -56,7 +56,7 @@ const CourseCard = ({ course }) => {
         <Text className="course-description">{course.description}</Text>
         <div className="course-meta">
           <Space>
-            <span><UserOutlined /> {course.teacher?.name || '未知教师'}</span>
+            <span><UserOutlined /> {course.teacher?.fullName || '未知教师'}</span>
             <span><ClockCircleOutlined /> {course.duration ? `${Math.floor(course.duration / 60)}小时` : '时长未定'}</span>
             <span><BookOutlined /> {course.category}</span>
           </Space>
@@ -83,29 +83,68 @@ const CourseList = () => {
     category: 'all',
     status: 'all'
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userInfo = localStorage.getItem('userInfo');
+    console.log('当前用户信息:', {
+      token: token ? '存在' : '不存在',
+      userInfo: userInfo ? JSON.parse(userInfo) : null
+    });
+    
     fetchCourses();
   }, [filters]);
 
   const fetchCourses = async () => {
     try {
       setLoading(true);
+      // 检查认证状态
+      const token = localStorage.getItem('token');
+      if (!token) {
+        message.error('未登录，请先登录');
+        navigate('/login');
+        return;
+      }
+
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.category && filters.category !== 'all') params.append('category', filters.category);
       if (filters.status && filters.status !== 'all') params.append('status', filters.status);
 
-      const response = await axios.get(`/courses?${params.toString()}`);
+      console.log('发送请求:', `/api/student/my/courses?${params.toString()}`);
+      console.log('认证Token:', token);
+
+      const response = await axios.get(`/api/student/my/courses?${params.toString()}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
       
-      if (response.data.success) {
-        setCourses(response.data.data.list || []);
-      } else {
-        message.error('获取课程列表失败');
+      console.log('服务器响应:', response.data);
+      
+      try {
+        if (response.data && response.data.success) {
+          const courseList = response.data.data?.list || [];
+          setCourses(courseList);
+        } else {
+          setCourses([]);
+          message.warning(response.data?.message || '暂无课程数据');
+        }
+      } catch (error) {
+        console.error('处理课程数据时出错:', error);
+        setCourses([]);
+        message.error('获取课程数据失败');
       }
     } catch (error) {
       console.error('获取课程列表失败:', error);
-      message.error('获取课程列表失败');
+      if (error.response) {
+        console.error('错误响应:', error.response.data);
+        message.error(error.response.data.message || '获取课程列表失败');
+      } else {
+        message.error('获取课程列表失败，请检查网络连接');
+      }
+      setCourses([]);
     } finally {
       setLoading(false);
     }

@@ -11,11 +11,11 @@ Course.hasMany(Chapter, { foreignKey: 'courseId' });
 Chapter.belongsTo(Course, { foreignKey: 'courseId' });
 
 // 学习进度关联
-Progress.belongsTo(User, { foreignKey: 'userId' });
+Progress.belongsTo(User, { foreignKey: 'studentId' });
 Progress.belongsTo(Course, { foreignKey: 'courseId' });
 Progress.belongsTo(Chapter, { foreignKey: 'chapterId' });
 
-User.hasMany(Progress, { foreignKey: 'userId' });
+User.hasMany(Progress, { foreignKey: 'studentId' });
 Course.hasMany(Progress, { foreignKey: 'courseId' });
 Chapter.hasMany(Progress, { foreignKey: 'chapterId' });
 

@@ -2,7 +2,7 @@ import axios from 'axios';
 import { message } from 'antd';
 
 const instance = axios.create({
-    baseURL: 'http://localhost:3001',
+    baseURL: 'http://localhost:3000',
     timeout: 10000,
     withCredentials: true,
     headers: {
@@ -27,12 +27,7 @@ instance.interceptors.request.use(
 // 响应拦截器
 instance.interceptors.response.use(
     (response) => {
-        // 检查响应中的数据格式
-        if (response.data && response.data.success === false) {
-            message.error(response.data.message || '请求失败');
-            return Promise.reject(new Error(response.data.message));
-        }
-        return response.data;
+        return response;
     },
     (error) => {
         if (error.response) {
@@ -50,18 +45,21 @@ instance.interceptors.response.use(
                     }, 1000);
                     break;
                 case 403:
-                    message.error('没有权限执行此操作');
+                    message.error('没有权限访问此资源');
+                    break;
+                case 404:
+                    message.error('请求的资源不存在');
                     break;
                 case 500:
                     message.error('服务器错误');
                     break;
                 default:
-                    message.error(error.response.data?.message || '请求失败');
+                    message.error('请求失败');
             }
         } else if (error.request) {
             message.error('无法连接到服务器');
         } else {
-            message.error('请求出错');
+            message.error('请求配置错误');
         }
         return Promise.reject(error);
     }

@@ -135,9 +135,8 @@ const Courses = () => {
 
       const response = await axios.get(`/api/student/courses?${params.toString()}`);
       
-      // response 现在直接是 data，因为在 axios 拦截器中处理过了
-      if (response.success && Array.isArray(response.data)) {
-        setCourses(response.data);
+      if (response.data.success) {
+        setCourses(response.data.data.list || []);
       } else {
         setCourses([]);
         message.warning('暂无课程数据');
@@ -145,7 +144,7 @@ const Courses = () => {
     } catch (error) {
       console.error('获取课程列表失败:', error);
       setCourses([]);
-      // 错误消息已经在 axios 拦截器中处理过了
+      message.error('获取课程列表失败');
     } finally {
       setLoading(false);
     }

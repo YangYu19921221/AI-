@@ -6,7 +6,6 @@ const userRoutes = require('./routes/userRoutes');
 const aiRoutes = require('./routes/aiRoutes');
 const courseRoutes = require('./routes/courseRoutes');
 const assignmentRoutes = require('./routes/assignmentRoutes');
-const studentCourseRoutes = require('./routes/studentCourseRoutes');
 const authRoutes = require('./routes/authRoutes');
 const path = require('path');
 
@@ -60,14 +59,6 @@ app.get('/', (req, res) => {
     res.json({ message: 'API is working' });
 });
 
-// API路由
-app.use('/api/users', userRoutes);
-app.use('/api/ai', aiRoutes);
-app.use('/api/courses', courseRoutes);
-app.use('/api/assignments', assignmentRoutes);
-app.use('/api/student/courses', studentCourseRoutes);
-app.use('/api/auth', authRoutes);
-
 // 错误处理中间件
 app.use((err, req, res, next) => {
     console.error('服务器错误:', err);
@@ -77,6 +68,13 @@ app.use((err, req, res, next) => {
         error: process.env.NODE_ENV === 'development' ? err.message : undefined
     });
 });
+
+// API路由
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/ai', aiRoutes);
+app.use('/api/student', courseRoutes);
+app.use('/api/assignments', assignmentRoutes);
 
 const PORT = process.env.PORT || 3001;
 

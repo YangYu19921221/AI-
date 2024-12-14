@@ -2,241 +2,77 @@ const { Course, User, Chapter, Progress, Tag, CourseReview } = require('../model
 const { Op } = require('sequelize');
 const sequelize = require('../models').sequelize;
 
-// 创建测试数据
-const createTestData = async () => {
-    try {
-        const coursesCount = await Course.count();
-        if (coursesCount === 0) {
-            const testCourses = [
-                {
-                    title: 'JavaScript基础教程',
-                    description: '从零开始学习JavaScript编程语言',
-                    level: 'beginner',
-                    category: 'programming',
-                    coverImage: 'https://via.placeholder.com/300x160?text=JavaScript',
-                    teacherId: 1
-                },
-                {
-                    title: 'React入门到精通',
-                    description: '学习React框架开发现代Web应用',
-                    level: 'intermediate',
-                    category: 'programming',
-                    coverImage: 'https://via.placeholder.com/300x160?text=React',
-                    teacherId: 1
-                },
-                {
-                    title: '高等数学基础',
-                    description: '大学数学基础课程',
-                    level: 'beginner',
-                    category: 'math',
-                    coverImage: 'https://via.placeholder.com/300x160?text=数学',
-                    teacherId: 1
-                },
-                {
-                    title: '物理学导论',
-                    description: '基础物理学知识介绍',
-                    level: 'beginner',
-                    category: 'physics',
-                    coverImage: 'https://via.placeholder.com/300x160?text=物理',
-                    teacherId: 1
-                }
-            ];
-
-            await Course.bulkCreate(testCourses);
-            console.log('测试数据创建成功');
-        }
-    } catch (error) {
-        console.error('创建测试数据失败:', error);
-    }
-};
-
-// 初始化测试数据
-createTestData();
-
 // 获取课程列表
-exports.getCourses = async (req, res) => {
+const getCourses = async (req, res) => {
     try {
-        console.log('接收到获取课程列表请求:', req.query);
-        const { 
-            page = 1, 
-            page_size = 12, 
-            search, 
-            category,
-            level,
-            tag_ids,
-            price_min,
-            price_max,
-            sort_by = 'created_at',
-            sort_order = 'DESC',
-            teacher_id
-        } = req.query;
+        const { search, category, level, page = 1, pageSize = 10 } = req.query;
+        const offset = (page - 1) * pageSize;
         
-        const offset = (page - 1) * page_size;
-        
-        // 构建查询条件
         const where = {};
-        const include = [
-            {
-                model: User,
-                as: 'teacher',
-                attributes: ['id', 'fullName', 'username', 'email']
-            },
-            {
-                model: Tag,
-                as: 'tags',
-                through: { attributes: [] },
-                attributes: ['id', 'name', 'category']
-            }
-        ];
-        
-        // 搜索条件
         if (search) {
             where[Op.or] = [
-                { title: { [Op.like]: `%${search}%` } },
-                { description: { [Op.like]: `%${search}%` } }
+                { title: { [Op.iLike]: `%${search}%` } },
+                { description: { [Op.iLike]: `%${search}%` } }
             ];
         }
-
-        // 基本筛选
-        if (category) {
+        if (category && category !== 'all') {
             where.category = category;
         }
-        if (level) {
+        if (level && level !== 'all') {
             where.level = level;
         }
-        if (teacher_id) {
-            where.teacher_id = teacher_id;
-        }
 
-        // 价格范围筛选
-        if (price_min !== undefined || price_max !== undefined) {
-            where.price = {};
-            if (price_min !== undefined) {
-                where.price[Op.gte] = price_min;
-            }
-            if (price_max !== undefined) {
-                where.price[Op.lte] = price_max;
-            }
-        }
-
-        // 标签筛选
-        if (tag_ids) {
-            const tagIdsArray = tag_ids.split(',').map(Number);
-            include[1].where = {
-                id: {
-                    [Op.in]: tagIdsArray
+        const { count, rows } = await Course.findAndCountAll({
+            where,
+            include: [
+                {
+                    model: User,
+                    as: 'teacher',
+                    attributes: ['id', 'fullName', 'avatar']
                 }
-            };
-        }
-
-        // 排序
-        const order = [];
-        switch (sort_by) {
-            case 'price':
-                order.push(['price', sort_order]);
-                break;
-            case 'rating':
-                // 添加子查询来计算平均评分
-                include.push({
-                    model: CourseReview,
-                    as: 'reviews',
-                    attributes: [],
-                    where: { status: 'approved' },
-                    required: false
-                });
-                order.push([sequelize.fn('AVG', sequelize.col('reviews.rating')), sort_order]);
-                break;
-            default:
-                order.push(['created_at', sort_order]);
-        }
-
-        // 查询课程总数
-        const total = await Course.count({ 
-            where,
-            include: tag_ids ? [include[1]] : [] 
+            ],
+            limit: parseInt(pageSize),
+            offset: offset,
+            order: [['createdAt', 'DESC']]
         });
-
-        // 查询分页数据
-        const courses = await Course.findAll({
-            where,
-            include,
-            order,
-            limit: parseInt(page_size),
-            offset: parseInt(offset),
-            distinct: true,
-            group: tag_ids ? ['Course.id', 'teacher.id', 'tags.id'] : ['Course.id', 'teacher.id']
-        });
-
-        // 获取每个课程的评分统计
-        const coursesWithStats = await Promise.all(courses.map(async (course) => {
-            const stats = await CourseReview.findOne({
-                where: { 
-                    courseId: course.id,
-                    status: 'approved'
-                },
-                attributes: [
-                    [sequelize.fn('AVG', sequelize.col('rating')), 'average_rating'],
-                    [sequelize.fn('COUNT', sequelize.col('id')), 'total_reviews']
-                ],
-                raw: true
-            });
-
-            const courseJson = course.toJSON();
-            return {
-                ...courseJson,
-                teacher: courseJson.teacher ? {
-                    ...courseJson.teacher,
-                    name: courseJson.teacher.fullName
-                } : null,
-                average_rating: Number(stats?.average_rating || 0).toFixed(1),
-                total_reviews: stats?.total_reviews || 0
-            };
-        }));
 
         res.json({
             success: true,
             data: {
-                list: coursesWithStats,
-                pagination: {
-                    current: parseInt(page),
-                    pageSize: parseInt(page_size),
-                    total
-                }
+                list: rows,
+                total: count,
+                page: parseInt(page),
+                pageSize: parseInt(pageSize),
+                totalPages: Math.ceil(count / pageSize)
             }
         });
     } catch (error) {
         console.error('获取课程列表失败:', error);
         res.status(500).json({
             success: false,
-            message: '获取课程列表失败',
-            error: process.env.NODE_ENV === 'development' ? {
-                message: error.message,
-                stack: error.stack
-            } : undefined
+            message: '获取课程列表失败'
         });
     }
 };
 
 // 获取课程详情
-exports.getCourseById = async (req, res) => {
+const getCourseById = async (req, res) => {
     try {
-        const { id } = req.params;
-        const course = await Course.findByPk(id, {
+        const courseId = req.params.id;
+        const course = await Course.findByPk(courseId, {
             include: [
                 {
                     model: User,
                     as: 'teacher',
-                    attributes: ['id', 'fullName', 'username', 'email']
+                    attributes: ['id', 'fullName', 'avatar']
                 },
                 {
                     model: Chapter,
-                    attributes: ['id', 'title', 'content', 'order'],
                     include: [
                         {
                             model: Progress,
-                            required: false,
-                            where: req.user ? { user_id: req.user.id } : {},
-                            attributes: ['status', 'score']
+                            where: { userId: req.user?.id },
+                            required: false
                         }
                     ]
                 }
@@ -258,17 +94,13 @@ exports.getCourseById = async (req, res) => {
         console.error('获取课程详情失败:', error);
         res.status(500).json({
             success: false,
-            message: '获取课程详情失败',
-            error: process.env.NODE_ENV === 'development' ? {
-                message: error.message,
-                stack: error.stack
-            } : undefined
+            message: '获取课程详情失败'
         });
     }
 };
 
 // 创建新课程
-exports.createCourse = async (req, res) => {
+const createCourse = async (req, res) => {
     try {
         console.log('接收到创建新课程请求:', req.body);
         const { title, description, level, category, cover_image } = req.body;
@@ -309,7 +141,7 @@ exports.createCourse = async (req, res) => {
 };
 
 // 更新课程信息
-exports.updateCourse = async (req, res) => {
+const updateCourse = async (req, res) => {
     try {
         const { id } = req.params;
         const { title, description, level, category, cover_image, status } = req.body;
@@ -357,7 +189,7 @@ exports.updateCourse = async (req, res) => {
 };
 
 // 删除课程
-exports.deleteCourse = async (req, res) => {
+const deleteCourse = async (req, res) => {
     try {
         const { id } = req.params;
         
@@ -397,7 +229,7 @@ exports.deleteCourse = async (req, res) => {
 };
 
 // 选课
-exports.enrollCourse = async (req, res) => {
+const enrollCourse = async (req, res) => {
     try {
         const { id: course_id } = req.params;
         const student_id = req.user.id;
@@ -421,7 +253,7 @@ exports.enrollCourse = async (req, res) => {
         const existingProgress = await Progress.findOne({
             where: {
                 course_id,
-                student_id
+                userId: student_id
             }
         });
 
@@ -440,7 +272,7 @@ exports.enrollCourse = async (req, res) => {
 
         // 为每个章节创建进度记录
         const progressRecords = chapters.map(chapter => ({
-            student_id,
+            userId: student_id,
             course_id,
             chapter_id: chapter.id,
             status: 'not_started',
@@ -467,7 +299,7 @@ exports.enrollCourse = async (req, res) => {
 };
 
 // 更新学习进度
-exports.updateProgress = async (req, res) => {
+const updateProgress = async (req, res) => {
     try {
         const { course_id, chapter_id } = req.params;
         const { status, completion_percentage } = req.body;
@@ -478,7 +310,7 @@ exports.updateProgress = async (req, res) => {
             where: {
                 course_id,
                 chapter_id,
-                student_id
+                userId: student_id
             }
         });
 
@@ -500,7 +332,7 @@ exports.updateProgress = async (req, res) => {
         const allProgress = await Progress.findAll({
             where: {
                 course_id,
-                student_id
+                userId: student_id
             }
         });
 
@@ -524,4 +356,137 @@ exports.updateProgress = async (req, res) => {
             } : undefined
         });
     }
+};
+
+// 获取学生的课程列表
+const getStudentCourses = async (req, res) => {
+    try {
+        console.log('开始获取学生课程列表');
+        console.log('用户信息:', req.user?.toJSON());
+        
+        const studentId = req.user?.id;
+        if (!studentId) {
+            return res.status(401).json({
+                success: false,
+                message: '未找到用户信息'
+            });
+        }
+
+        console.log('学生ID:', studentId);
+
+        // 获取学生已选的课程
+        console.log('开始查询课程...');
+        console.log('学生ID:', studentId);
+        
+        // 获取学生的选课记录
+        const progresses = await Progress.findAll({
+            where: {
+                studentId: studentId
+            },
+            attributes: ['courseId']
+        });
+
+        console.log('找到的进度记录:', progresses);
+        
+        if (progresses.length === 0) {
+            return res.json({
+                success: true,
+                data: {
+                    list: []
+                },
+                message: '还没有选修任何课程'
+            });
+        }
+
+        const courseIds = progresses.map(p => p.courseId);
+        console.log('课程IDs:', courseIds);
+        
+        const courses = await Course.findAll({
+            where: {
+                id: {
+                    [Op.in]: courseIds
+                }
+            },
+            include: [
+                {
+                    model: User,
+                    as: 'teacher',
+                    attributes: ['id', 'username', 'fullName', 'avatar']
+                }
+            ],
+            order: [['createdAt', 'DESC']]
+        });
+
+        console.log('查询到的课程数量:', courses.length);
+        console.log('课程数据:', JSON.stringify(courses, null, 2));
+        
+        // 获取每个课程的最新进度
+        const latestProgresses = await Progress.findAll({
+            where: {
+                studentId: studentId,
+                courseId: {
+                    [Op.in]: courseIds
+                }
+            },
+            attributes: ['courseId', 'progress', 'lastAccessedAt']
+        });
+
+        console.log('进度数据:', latestProgresses);
+
+        // 创建进度映射
+        const progressMap = new Map(
+            latestProgresses.map(p => [p.courseId, {
+                progress: p.progress,
+                lastAccessedAt: p.lastAccessedAt
+            }])
+        );
+        
+        // 格式化返回数据
+        const formattedCourses = courses.map(course => {
+            const courseData = course.toJSON();
+            const progress = progressMap.get(courseData.id) || { progress: 0 };
+            
+            return {
+                ...courseData,
+                progress: progress.progress || 0,
+                lastAccessedAt: progress.lastAccessedAt,
+                teacher: courseData.teacher ? {
+                    id: courseData.teacher.id,
+                    name: courseData.teacher.fullName,
+                    avatar: courseData.teacher.avatar
+                } : null
+            };
+        });
+
+        console.log('格式化后的课程数据:', JSON.stringify(formattedCourses, null, 2));
+
+        return res.json({
+            success: true,
+            data: {
+                list: formattedCourses
+            }
+        });
+    } catch (error) {
+        console.error('获取学生课程列表失败:', error);
+        console.error('错误堆栈:', error.stack);
+        res.status(500).json({
+            success: false,
+            message: '获取学生课程列表失败',
+            error: process.env.NODE_ENV === 'development' ? {
+                message: error.message,
+                stack: error.stack
+            } : {}
+        });
+    }
+};
+
+module.exports = {
+    getCourses,
+    getCourseById,
+    createCourse,
+    updateCourse,
+    deleteCourse,
+    enrollCourse,
+    updateProgress,
+    getStudentCourses
 };
