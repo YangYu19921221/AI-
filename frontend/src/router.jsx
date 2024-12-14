@@ -11,6 +11,13 @@ import StudentAssignments from './pages/student/Assignments';
 import AssignmentDetail from './pages/student/AssignmentDetail';
 import Chat from './pages/ai/Chat';
 
+// 退出登录处理函数
+const handleLogout = () => {
+  localStorage.removeItem('token');
+  localStorage.removeItem('userInfo');
+  return <Navigate to="/login" replace />;
+};
+
 const router = createBrowserRouter([
   // 公共路由（不需要Layout）
   {
@@ -24,6 +31,10 @@ const router = createBrowserRouter([
   {
     path: '/forgot-password',
     element: <ForgotPassword />
+  },
+  {
+    path: '/logout',
+    element: handleLogout()
   },
   // 需要Layout的路由
   {
@@ -57,6 +68,10 @@ const router = createBrowserRouter([
           {
             path: 'assignments/:id',
             element: <AssignmentDetail />
+          },
+          {
+            path: 'profile',
+            element: <div>个人中心</div>
           }
         ]
       },
