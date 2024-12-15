@@ -4,20 +4,20 @@ const courseController = require('../controllers/courseController');
 const { authenticate, authorize } = require('../middleware/auth');
 
 // 学生路由 - 需要学生权限
-router.get('/my/courses', 
+router.get('/student/courses', 
     authenticate, 
     authorize(['student']), 
     courseController.getStudentCourses
 );
 
 // 其他学生路由
-router.post('/courses/:id/enroll', 
+router.post('/student/courses/:id/enroll', 
     authenticate, 
     authorize(['student']), 
     courseController.enrollCourse
 );
 
-router.put('/courses/:course_id/chapters/:chapter_id/progress',
+router.put('/student/courses/:course_id/chapters/:chapter_id/progress',
     authenticate,
     authorize(['student']),
     courseController.updateProgress

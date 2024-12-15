@@ -361,121 +361,105 @@ const updateProgress = async (req, res) => {
 // 获取学生的课程列表
 const getStudentCourses = async (req, res) => {
     try {
-        console.log('开始获取学生课程列表');
-        console.log('用户信息:', req.user?.toJSON());
-        
-        const studentId = req.user?.id;
-        if (!studentId) {
-            return res.status(401).json({
-                success: false,
-                message: '未找到用户信息'
-            });
-        }
-
-        console.log('学生ID:', studentId);
-
-        // 获取学生已选的课程
-        console.log('开始查询课程...');
-        console.log('学生ID:', studentId);
-        
-        // 获取学生的选课记录
-        const progresses = await Progress.findAll({
-            where: {
-                studentId: studentId
-            },
-            attributes: ['courseId']
-        });
-
-        console.log('找到的进度记录:', progresses);
-        
-        if (progresses.length === 0) {
-            return res.json({
-                success: true,
-                data: {
-                    list: []
+        // 模拟测试数据
+        const testCourses = [
+            {
+                id: 1,
+                title: "Python基础编程",
+                description: "适合零基础学习的Python入门课程",
+                coverImage: "https://via.placeholder.com/300x160?text=Python",
+                category: "编程语言",
+                level: "初级",
+                progress: 75,
+                teacher: {
+                    id: 1,
+                    fullName: "张老师",
+                    avatar: "https://via.placeholder.com/50"
                 },
-                message: '还没有选修任何课程'
+                totalChapters: 12,
+                completedChapters: 9,
+                rating: 4.5,
+                studentsCount: 128,
+                tags: ["Python", "编程基础", "实战项目"]
+            },
+            {
+                id: 2,
+                title: "Web前端开发实战",
+                description: "从零开始学习HTML、CSS和JavaScript",
+                coverImage: "https://via.placeholder.com/300x160?text=Web",
+                category: "前端开发",
+                level: "中级",
+                progress: 30,
+                teacher: {
+                    id: 2,
+                    fullName: "李老师",
+                    avatar: "https://via.placeholder.com/50"
+                },
+                totalChapters: 15,
+                completedChapters: 5,
+                rating: 4.8,
+                studentsCount: 256,
+                tags: ["HTML", "CSS", "JavaScript"]
+            },
+            {
+                id: 3,
+                title: "数据结构与算法",
+                description: "计算机科学必修课程",
+                coverImage: "https://via.placeholder.com/300x160?text=DSA",
+                category: "计算机科学",
+                level: "高级",
+                progress: 0,
+                teacher: {
+                    id: 3,
+                    fullName: "王老师",
+                    avatar: "https://via.placeholder.com/50"
+                },
+                totalChapters: 20,
+                completedChapters: 0,
+                rating: 4.9,
+                studentsCount: 189,
+                tags: ["数据结构", "算法", "编程进阶"]
+            }
+        ];
+
+        // 处理搜索和筛选
+        const { search, category, status } = req.query;
+        let filteredCourses = [...testCourses];
+
+        if (search) {
+            filteredCourses = filteredCourses.filter(course => 
+                course.title.toLowerCase().includes(search.toLowerCase()) ||
+                course.description.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+
+        if (category && category !== 'all') {
+            filteredCourses = filteredCourses.filter(course => 
+                course.category === category
+            );
+        }
+
+        if (status && status !== 'all') {
+            filteredCourses = filteredCourses.filter(course => {
+                if (status === 'completed') return course.progress === 100;
+                if (status === 'in_progress') return course.progress > 0 && course.progress < 100;
+                if (status === 'not_started') return course.progress === 0;
+                return true;
             });
         }
 
-        const courseIds = progresses.map(p => p.courseId);
-        console.log('课程IDs:', courseIds);
-        
-        const courses = await Course.findAll({
-            where: {
-                id: {
-                    [Op.in]: courseIds
-                }
-            },
-            include: [
-                {
-                    model: User,
-                    as: 'teacher',
-                    attributes: ['id', 'username', 'fullName', 'avatar']
-                }
-            ],
-            order: [['createdAt', 'DESC']]
-        });
-
-        console.log('查询到的课程数量:', courses.length);
-        console.log('课程数据:', JSON.stringify(courses, null, 2));
-        
-        // 获取每个课程的最新进度
-        const latestProgresses = await Progress.findAll({
-            where: {
-                studentId: studentId,
-                courseId: {
-                    [Op.in]: courseIds
-                }
-            },
-            attributes: ['courseId', 'progress', 'lastAccessedAt']
-        });
-
-        console.log('进度数据:', latestProgresses);
-
-        // 创建进度映射
-        const progressMap = new Map(
-            latestProgresses.map(p => [p.courseId, {
-                progress: p.progress,
-                lastAccessedAt: p.lastAccessedAt
-            }])
-        );
-        
-        // 格式化返回数据
-        const formattedCourses = courses.map(course => {
-            const courseData = course.toJSON();
-            const progress = progressMap.get(courseData.id) || { progress: 0 };
-            
-            return {
-                ...courseData,
-                progress: progress.progress || 0,
-                lastAccessedAt: progress.lastAccessedAt,
-                teacher: courseData.teacher ? {
-                    id: courseData.teacher.id,
-                    name: courseData.teacher.fullName,
-                    avatar: courseData.teacher.avatar
-                } : null
-            };
-        });
-
-        console.log('格式化后的课程数据:', JSON.stringify(formattedCourses, null, 2));
-
-        return res.json({
+        res.json({
             success: true,
             data: {
-                list: formattedCourses
+                list: filteredCourses,
+                total: filteredCourses.length
             }
         });
     } catch (error) {
         console.error('获取学生课程列表失败:', error);
-        console.error('错误堆栈:', error.stack);
         res.status(500).json({
             success: false,
-            message: '获取学生课程列表失败',
-            error: process.env.NODE_ENV === 'development' ? {
-                message: error.message,
-                stack: error.stack
-            } : {}
+            message: '获取课程列表失败'
         });
     }
 };

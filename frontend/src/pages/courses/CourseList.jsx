@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Input,
   Select,
@@ -57,18 +57,23 @@ const CourseCard = ({ course }) => {
         <div className="course-meta">
           <Space>
             <span><UserOutlined /> {course.teacher?.fullName || '未知教师'}</span>
-            <span><ClockCircleOutlined /> {course.duration ? `${Math.floor(course.duration / 60)}小时` : '时长未定'}</span>
             <span><BookOutlined /> {course.category}</span>
+            <span><ClockCircleOutlined /> {course.completedChapters}/{course.totalChapters}章</span>
           </Space>
+        </div>
+        <div className="course-progress">
+          <Progress percent={course.progress} size="small" />
         </div>
         <div className="course-footer">
           <div className="course-rating">
-            <Rate disabled defaultValue={parseFloat(course.average_rating)} />
-            <Text className="review-count">({course.total_reviews}条评价)</Text>
+            <Rate disabled defaultValue={course.rating || 0} />
+            <Text className="review-count">({course.studentsCount || 0}名学员)</Text>
           </div>
-          <Button type="link" className="enter-course">
-            进入课程 <RightOutlined />
-          </Button>
+          <div className="course-tags">
+            {course.tags && course.tags.map((tag, index) => (
+              <Tag key={index} color="blue">{tag}</Tag>
+            ))}
+          </div>
         </div>
       </div>
     </div>
@@ -85,70 +90,61 @@ const CourseList = () => {
   });
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = sessionStorage.getItem('token');
-    const userInfo = sessionStorage.getItem('userInfo');
-    console.log('当前用户信息:', {
-      token: token ? '存在' : '不存在',
-      userInfo: userInfo ? JSON.parse(userInfo) : null
-    });
-    
-    fetchCourses();
-  }, [filters]);
-
-  const fetchCourses = async () => {
+  const fetchCourses = useCallback(async () => {
     try {
       setLoading(true);
-      // 检查认证状态
-      const token = sessionStorage.getItem('token');
-      if (!token) {
-        message.error('未登录，请先登录');
-        navigate('/login');
-        return;
-      }
-
       const params = new URLSearchParams();
       if (filters.search) params.append('search', filters.search);
       if (filters.category && filters.category !== 'all') params.append('category', filters.category);
       if (filters.status && filters.status !== 'all') params.append('status', filters.status);
 
-      console.log('发送请求:', `/api/student/my/courses?${params.toString()}`);
-      console.log('认证Token:', token);
-
-      const response = await axios.get(`/api/student/my/courses?${params.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const url = `/student/courses${params.toString() ? `?${params.toString()}` : ''}`;
+      console.log('Fetching courses from:', url);
       
-      console.log('服务器响应:', response.data);
+      const response = await axios.get(url);
+      console.log('API Response:', response);
       
-      try {
-        if (response.data && response.data.success) {
-          const courseList = response.data.data?.list || [];
-          setCourses(courseList);
-        } else {
-          setCourses([]);
-          message.warning(response.data?.message || '暂无课程数据');
-        }
-      } catch (error) {
-        console.error('处理课程数据时出错:', error);
+      if (response && response.success) {
+        const courseList = response.data?.list || [];
+        console.log('Course list:', courseList);
+        setCourses(courseList);
+      } else {
+        console.log('No courses found or API error:', response);
         setCourses([]);
-        message.error('获取课程数据失败');
+        message.warning(response?.message || '暂无课程数据');
       }
     } catch (error) {
       console.error('获取课程列表失败:', error);
-      if (error.response) {
-        console.error('错误响应:', error.response.data);
-        message.error(error.response.data.message || '获取课程列表失败');
-      } else {
-        message.error('获取课程列表失败，请检查网络连接');
-      }
       setCourses([]);
+      message.error('获取课程列表失败，请检查网络连接');
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('token');
+    if (!token) {
+      message.error('未登录，请先登录');
+      navigate('/login');
+      return;
+    }
+    fetchCourses();
+  }, [filters, navigate, fetchCourses]);
+
+  const categories = [
+    { value: 'all', label: '全部分类' },
+    { value: '编程语言', label: '编程语言' },
+    { value: '前端开发', label: '前端开发' },
+    { value: '计算机科学', label: '计算机科学' }
+  ];
+
+  const statuses = [
+    { value: 'all', label: '全部状态' },
+    { value: 'not_started', label: '未开始' },
+    { value: 'in_progress', label: '学习中' },
+    { value: 'completed', label: '已完成' }
+  ];
 
   if (loading) {
     return (
@@ -179,10 +175,9 @@ const CourseList = () => {
               value={filters.category}
               onChange={value => setFilters(prev => ({ ...prev, category: value }))}
             >
-              <Option value="all">全部分类</Option>
-              <Option value="programming">编程</Option>
-              <Option value="math">数学</Option>
-              <Option value="physics">物理</Option>
+              {categories.map(cat => (
+                <Option key={cat.value} value={cat.value}>{cat.label}</Option>
+              ))}
             </Select>
             <Select
               style={{ width: 120 }}
@@ -190,10 +185,9 @@ const CourseList = () => {
               value={filters.status}
               onChange={value => setFilters(prev => ({ ...prev, status: value }))}
             >
-              <Option value="all">全部状态</Option>
-              <Option value="not-started">未开始</Option>
-              <Option value="in-progress">学习中</Option>
-              <Option value="completed">已完成</Option>
+              {statuses.map(status => (
+                <Option key={status.value} value={status.value}>{status.label}</Option>
+              ))}
             </Select>
           </Space>
         </div>
@@ -210,9 +204,7 @@ const CourseList = () => {
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description="暂无课程"
           className="empty-container"
-        >
-          <Button type="primary">浏览课程</Button>
-        </Empty>
+        />
       )}
     </div>
   );
