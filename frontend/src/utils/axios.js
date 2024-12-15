@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { message } from 'antd';
 
+// 创建 axios 实例
 const instance = axios.create({
-    baseURL: 'http://localhost:3000',
+    baseURL: 'http://localhost:3000/api',
     timeout: 10000,
-    withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
     }
@@ -13,7 +13,7 @@ const instance = axios.create({
 // 请求拦截器
 instance.interceptors.request.use(
     (config) => {
-        const token = localStorage.getItem('token');
+        const token = sessionStorage.getItem('token');
         if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
@@ -27,22 +27,19 @@ instance.interceptors.request.use(
 // 响应拦截器
 instance.interceptors.response.use(
     (response) => {
-        return response;
+        return response.data;
     },
     (error) => {
         if (error.response) {
             switch (error.response.status) {
                 case 401:
                     // 未授权，清除token并跳转到登录页
-                    localStorage.removeItem('token');
-                    localStorage.removeItem('userInfo');
+                    sessionStorage.removeItem('token');
+                    sessionStorage.removeItem('userInfo');
                     // 保存当前路径
-                    localStorage.setItem('redirectPath', window.location.pathname);
+                    sessionStorage.setItem('redirectPath', window.location.pathname);
                     message.error('登录已过期，请重新登录');
-                    // 使用 window.location 而不是 navigate，确保完全刷新
-                    setTimeout(() => {
-                        window.location.href = '/login';
-                    }, 1000);
+                    window.location.href = '/login';
                     break;
                 case 403:
                     message.error('没有权限访问此资源');
@@ -57,7 +54,7 @@ instance.interceptors.response.use(
                     message.error('请求失败');
             }
         } else if (error.request) {
-            message.error('无法连接到服务器');
+            message.error('网络错误，请检查您的网络连接');
         } else {
             message.error('请求配置错误');
         }

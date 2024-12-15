@@ -86,8 +86,8 @@ const CourseList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userInfo = localStorage.getItem('userInfo');
+    const token = sessionStorage.getItem('token');
+    const userInfo = sessionStorage.getItem('userInfo');
     console.log('当前用户信息:', {
       token: token ? '存在' : '不存在',
       userInfo: userInfo ? JSON.parse(userInfo) : null
@@ -100,7 +100,7 @@ const CourseList = () => {
     try {
       setLoading(true);
       // 检查认证状态
-      const token = localStorage.getItem('token');
+      const token = sessionStorage.getItem('token');
       if (!token) {
         message.error('未登录，请先登录');
         navigate('/login');

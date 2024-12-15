@@ -2,40 +2,46 @@ import React from 'react';
 import { Form, Input, Button, message } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import axios from '../utils/axios';
 import '../styles/auth.css';
 
 // 配置 axios 默认值
-axios.defaults.withCredentials = true;
-axios.defaults.baseURL = 'http://localhost:3000';
+// axios.defaults.withCredentials = true;
+// axios.defaults.baseURL = 'http://localhost:3000';
 
 const Login = () => {
     const navigate = useNavigate();
 
     const onFinish = async (values) => {
         try {
-            const response = await axios.post('/api/auth/login', values);
+            const response = await axios.post('/auth/login', values);
             
-            if (response.data.success) {
-                const { token, user } = response.data.data;
-                localStorage.setItem('token', token);
-                localStorage.setItem('userInfo', JSON.stringify(user));
+            if (response.success) {
+                const { token, user } = response.data;
+                
+                // 先设置用户信息，再设置 token
+                sessionStorage.setItem('userInfo', JSON.stringify(user));
+                sessionStorage.setItem('token', token);
                 
                 message.success('登录成功！');
                 
-                // 直接导航到对应角色的仪表盘
-                const dashboardPath = user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
-                navigate(dashboardPath);
+                // 获取之前保存的路径
+                const redirectPath = sessionStorage.getItem('redirectPath');
+                sessionStorage.removeItem('redirectPath'); // 清除保存的路径
+                
+                // 如果有保存的路径就跳转回去，否则跳转到默认仪表盘
+                if (redirectPath) {
+                    navigate(redirectPath);
+                } else {
+                    const dashboardPath = user.role === 'teacher' ? '/teacher/dashboard' : '/student/dashboard';
+                    navigate(dashboardPath);
+                }
             } else {
-                message.error(response.data.message || '登录失败');
+                message.error(response.message || '登录失败');
             }
         } catch (error) {
             console.error('Login error:', error);
-            if (error.response?.status === 401) {
-                message.error('用户名或密码错误');
-            } else {
-                message.error('登录失败：' + (error.response?.data?.message || '服务器错误'));
-            }
+            message.error('登录失败：' + (error.response?.data?.message || '服务器错误'));
         }
     };
 
@@ -52,7 +58,7 @@ const Login = () => {
 
                 <Form
                     name="login"
-                    className="auth-form"
+                    className="login-form"
                     onFinish={onFinish}
                     autoComplete="off"
                 >
@@ -61,8 +67,8 @@ const Login = () => {
                         rules={[
                             {
                                 required: true,
-                                message: '请输入用户名',
-                            },
+                                message: '请输入用户名！'
+                            }
                         ]}
                     >
                         <Input 
@@ -77,8 +83,8 @@ const Login = () => {
                         rules={[
                             {
                                 required: true,
-                                message: '请输入密码',
-                            },
+                                message: '请输入密码！'
+                            }
                         ]}
                     >
                         <Input.Password
@@ -88,8 +94,14 @@ const Login = () => {
                         />
                     </Form.Item>
 
-                    <Form.Item>
-                        <Button type="primary" htmlType="submit" className="auth-button" size="large">
+                    <Form.Item className="form-actions">
+                        <Button 
+                            type="primary" 
+                            htmlType="submit" 
+                            className="login-form-button"
+                            size="large"
+                            block
+                        >
                             登录
                         </Button>
                     </Form.Item>
